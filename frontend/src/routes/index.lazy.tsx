@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
-import deepseekLogo from "../../assets/DeepSeek-icon.svg";
+import deepseekLogo from "/assets/DeepSeek-icon.svg";
 
 export const Route = createLazyFileRoute('/')({
   component: Chat,
@@ -110,7 +110,7 @@ function Chat() {
   return (
     <div style={{ padding: '0rem 1rem', fontFamily: 'sans-serif', margin: 'auto' }}>
       <h3>Full-Stack Chat</h3>
-      <div style={{  height: '73vh', overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ height: '73vh', overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {messages.map((msg, index) => (
           <div
             key={index}
