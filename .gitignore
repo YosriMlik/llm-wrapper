@@ -1,7 +1,13 @@
-dist
-.env
-.tanstack
 node_modules
+.env
+.env.local
+.env.*.local
 *.log
-*.lock
+.DS_Store
 .vscode
+.idea
+.vite
+
+# Keep dist folders for deployment
+# dist/
+# frontend/dist/
