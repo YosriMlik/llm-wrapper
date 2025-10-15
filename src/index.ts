@@ -26,7 +26,7 @@ await fastify.register(cors, {
     origin: true
 })
 
-// Register static file serving (conditionally)
+// Register static file serving (conditionally )
 const staticPath = join(__dirname, '../frontend/dist/client')
 if (existsSync(staticPath)) {
     await fastify.register(staticFiles, {
