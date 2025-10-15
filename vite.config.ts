@@ -7,6 +7,7 @@ import path from 'path'
 export default defineConfig({
   root: 'frontend',
   envDir: '..',
+  cacheDir: '../.vite',
   plugins: [
     react(),
     tanstackRouter(),
