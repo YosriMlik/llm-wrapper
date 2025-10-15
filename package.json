@@ -1,0 +1,28 @@
+{
+  "name": "llm-wrapper-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"bun run dev:backend\" \"bun run dev:frontend\"",
+    "dev:backend": "bun --watch src/index.ts",
+    "dev:frontend": "vite",
+    "build": "vite build && bun build src/index.ts --outdir dist --target bun",
+    "start": "bun run build && bun dist/index.js"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.132.47",
+    "hono": "^4.4.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@tanstack/router-vite-plugin": "^1.132.56",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.2.1",
+    "vite": "^7.1.10"
+  }
+}
