@@ -1,17 +1,15 @@
 node_modules
-frontend/node_modules
 .git
 .env.local
 .env.*.local
 *.log
 .DS_Store
-frontend/src
-frontend/index.html
-frontend/vite.config.ts
-frontend/tsconfig.json
-vite.config.ts
-tsconfig.json
-src
-*.md
 .vscode
 .idea
+.vite
+
+# Keep source files for building
+# frontend/
+# src/
+# vite.config.ts
+# tsconfig.json
