@@ -7,7 +7,7 @@ A modern AI chatbot built with Next.js and OpenRouter API. Chat with multiple AI
 1. **Clone and install**
    ```bash
    git clone https://github.com/YosriMlik/llm-wrapper
-   cd <project-name>
+   cd llm_wrapper
    npm install
    ```
 
