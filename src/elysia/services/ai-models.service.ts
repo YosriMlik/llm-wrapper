@@ -1,4 +1,4 @@
-import { FREE_AI_MODELS, DEFAULT_AI_MODEL, getAiModelDisplayName } from '../config/ai-models'
+import { FREE_AI_MODELS, DEFAULT_AI_MODEL, getAiModelDisplayName } from '../config/ai-models-config'
 import type { AiModel, AiModelConfig } from '../models/ai-model'
 
 export class AiModelsService {

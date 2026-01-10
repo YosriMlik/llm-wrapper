@@ -1,5 +1,5 @@
 import { createOpenRouterService } from './openrouter'
-import { DEFAULT_AI_MODEL } from '../config/ai-models'
+import { DEFAULT_AI_MODEL } from '../config/ai-models-config'
 import type { ChatMessage, ChatRequest, ChatResponse } from '../models/chat'
 
 export class ChatService {

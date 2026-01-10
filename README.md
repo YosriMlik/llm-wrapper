@@ -40,9 +40,9 @@ A modern AI chatbot built with Next.js and OpenRouter API. Chat with multiple AI
 - **Radix UI** - Accessible component primitives
 - **OpenRouter API** - Access to multiple AI models
 
-# Elysia API - Model/Service/Controller Architecture
+# Elysia API - Service/Controller Architecture
 
-Clean M/S/C architecture with DTOs integrated in routes for a simple yet organized structure.
+Clean Service/Controller architecture with merged routes, DTOs, and handlers for simplicity.
 
 ## Architecture
 
@@ -55,18 +55,45 @@ src/elysia/
 │   ├── ai-models.service.ts   # AI models business logic
 │   ├── chat.service.ts        # Chat business logic
 │   └── openrouter.ts          # External API service
-├── controllers/                # HTTP request/response handling
-│   ├── ai-models.controller.ts # AI models route handlers
-│   ├── chat.controller.ts     # Chat route handlers
-│   └── health.controller.ts   # Health check handlers
-├── routes/                     # Elysia routes + DTOs
-│   ├── ai-models.routes.ts    # AI models routes + validation
-│   ├── chat.routes.ts         # Chat routes + validation
-│   └── health.routes.ts       # Health routes + validation
+├── controllers/                # Routes + DTOs + Handlers (all-in-one)
+│   ├── ai-models.controller.ts # AI models: DTOs + handlers + routes
+│   ├── chat.controller.ts     # Chat: DTOs + handlers + routes
+│   └── health.controller.ts   # Health: DTOs + handlers + routes
 ├── config/                     # Configuration
 │   └── ai-models.ts           # AI models config & constants
 ├── app.ts                      # Main Elysia app composition
 └── index.ts                    # Export services for server components
+```
+
+## Controller Structure
+
+Each controller contains:
+- **DTOs** - Elysia validation schemas
+- **Handlers** - Business logic functions
+- **Routes** - Elysia route definitions
+
+```typescript
+// Example: ai-models.controller.ts
+import { Elysia, t } from 'elysia'
+import { AiModelsService } from '../services/ai-models.service'
+
+// DTOs
+const AiModelDto = t.Object({
+  id: t.String(),
+  name: t.String(),
+})
+
+// Handlers
+const getAiModels = async () => {
+  const config = AiModelsService.getAiModels()
+  return { models: [...], default: "..." }
+}
+
+// Routes
+export const aiModelsController = new Elysia()
+  .get('/ai-models', getAiModels, {
+    response: GetAiModelsResponseDto,
+  })
 ```
 
 ## Layer Responsibilities
@@ -81,22 +108,18 @@ src/elysia/
 - Can be imported in server components
 - Domain model focused
 
-**Controllers** - HTTP handling
-- Request/response mapping
-- Error handling
-- Calls services, returns DTOs
-
-**Routes** - API definitions + DTOs
-- Elysia route definitions
-- Embedded DTOs for validation
-- API contract enforcement
+**Controllers** - Complete API feature (DTOs + Handlers + Routes)
+- Request/response validation (DTOs)
+- HTTP handling (handlers)
+- Route definitions (Elysia routes)
+- Single file per feature
 
 ## Usage Examples
 
 ### In API Routes
 ```typescript
 // Automatic validation with DTOs
-POST /api/chat -> ChatController.sendMessage -> ChatService.sendMessage
+POST /api/chat → sendMessage handler → ChatService.sendMessage
 ```
 
 ### In Server Components
@@ -112,10 +135,10 @@ export default function MyPage() {
 
 ## Benefits
 
-- **Clean Separation**: Each layer has clear responsibilities
+- **Simplified Structure**: Everything for a feature in one controller file
 - **Reusable Services**: Business logic works in API routes and server components
 - **Type Safety**: DTOs for API validation, domain models for business logic
-- **Simple Structure**: DTOs embedded in routes (no separate DTO folder needed)
+- **Easy Navigation**: Find all feature code in one place
 - **Scalable**: Easy to add new features following the same pattern
 
 ## API Endpoints
