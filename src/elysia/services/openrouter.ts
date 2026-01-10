@@ -1,4 +1,19 @@
-import type { OpenRouterMessage, OpenRouterRequest, OpenRouterResponse } from '../types/api'
+import type { ChatMessage } from '../models/chat'
+
+// OpenRouter specific types
+interface OpenRouterRequest {
+  model: string
+  messages: ChatMessage[]
+}
+
+interface OpenRouterResponse {
+  choices: Array<{
+    message: {
+      content: string
+    }
+  }>
+  model: string
+}
 
 export class OpenRouterService {
   private apiKey: string
@@ -8,7 +23,7 @@ export class OpenRouterService {
     this.apiKey = apiKey
   }
 
-  async chat(model: string, messages: OpenRouterMessage[]): Promise<OpenRouterResponse> {
+  async chat(model: string, messages: ChatMessage[]): Promise<OpenRouterResponse> {
     const requestBody: OpenRouterRequest = {
       model,
       messages,

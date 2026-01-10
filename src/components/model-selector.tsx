@@ -24,7 +24,7 @@ export function ModelSelector({ selectedModel, onModelChange, className }: Model
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await fetch('/api/models');
+        const response = await fetch('/api/ai-models');
         const data = await response.json();
         setModels(data.models || []);
       } catch (error) {

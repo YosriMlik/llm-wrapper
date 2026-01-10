@@ -1,2 +1,19 @@
 {
+    "files.exclude": {
+        "**/flutter/ephemeral": true,
+        "**/Flutter/ephemeral": true,
+        "**/.symlinks": true,
+        "**/.plugin_symlinks": true,
+        "**/.*": false,
+        "**/__pycache__": true,
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        ".next": true,
+        ".vscode": true,
+        "node_modules": true
+    },
+    "hide-files.files": []
 }
