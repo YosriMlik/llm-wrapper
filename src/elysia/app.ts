@@ -5,7 +5,12 @@ import { chatController } from './controllers/chat.controller'
 
 export const app = new Elysia({ prefix: '/api' })
   .onError(({ code, error, set }) => {
-    console.error('Elysia Error:', { code, error: error.message })
+    // Get error message safely
+    const errorMessage = error instanceof Error ? error.message : 
+                        typeof error === 'string' ? error : 
+                        'Unknown error'
+    
+    console.error('Elysia Error:', { code, error: errorMessage })
     
     if (code === 'NOT_FOUND') {
       set.status = 404
@@ -13,7 +18,7 @@ export const app = new Elysia({ prefix: '/api' })
     }
     
     set.status = 500
-    return { error: error.message || 'Internal server error' }
+    return { error: errorMessage }
   })
   .use(healthController)
   .use(aiModelsController)
