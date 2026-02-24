@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth"
-import Database from "better-sqlite3"
+// import Database from "better-sqlite3" // Disabled for deployment
 
 export const auth = betterAuth({
-  database: new Database("./database.db"),
+  // database: new Database("./database.db"), // Disabled for deployment
+  database: undefined, // Temporary fix for Vercel deployment
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Set to true in production
