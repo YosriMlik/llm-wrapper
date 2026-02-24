@@ -10,6 +10,7 @@ import { ModelSelector } from "./model-selector";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config"
 
 interface Message {
   id: string;
@@ -32,7 +33,7 @@ export default function AiChat() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [selectedModel, setSelectedModel] = useState("mistralai/devstral-2512:free");
+  const [selectedModel, setSelectedModel] = useState(DEFAULT_AI_MODEL);
 
   const handleNewChat = () => {
     setSelectedChatId(null);
@@ -110,6 +111,8 @@ export default function AiChat() {
         role: msg.role,
         content: msg.content,
       }));
+
+      //console.log("selectedModel is", selectedModel)
 
       const response = await fetch("/api/chat", {
         method: "POST",

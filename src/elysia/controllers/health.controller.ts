@@ -1,11 +1,5 @@
-import { Elysia, t } from 'elysia'
-
-// DTOs
-const HealthResponseDto = t.Object({
-  message: t.String(),
-  version: t.String(),
-  timestamp: t.String(),
-})
+import { Elysia } from 'elysia'
+import { HealthResponseDto } from '../dtos/health.dto'
 
 // Handlers
 const getHealth = () => {

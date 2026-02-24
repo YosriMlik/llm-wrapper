@@ -1,32 +1,26 @@
-import { Elysia, t } from 'elysia'
-import { ChatService } from '../services/chat.service'
+import { Elysia } from 'elysia'
+import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../dtos/chat.dto'
+import { betterAuth } from '../middleware/auth.middleware'
 import type { ChatRequest } from '../models/chat'
+import type { User } from '../config/auth.config'
 
-// DTOs
-const ChatMessageDto = t.Object({
-  role: t.Union([t.Literal('user'), t.Literal('assistant'), t.Literal('system')]),
-  content: t.String(),
-})
+// Handlers - will use injected services
+const sendMessage = async (context: any) => {
+  const { body, services, user } = context
 
-const ChatRequestDto = t.Object({
-  message: t.Optional(t.String()),
-  messages: t.Optional(t.Array(ChatMessageDto)),
-  model: t.Optional(t.String()),
-})
+  // Check if user can access chat
+  if (!services.auth.canAccessChat(user)) {
+    throw new Error('Access denied to chat functionality')
+  }
 
-const ChatResponseDto = t.Object({
-  response: t.String(),
-  model: t.String(),
-})
-
-// Handlers
-const sendMessage = async ({ body }: { body: ChatRequest }) => {
-  return await ChatService.sendMessage(body)
+  return await services.chat.sendMessage(body)
 }
 
-// Routes
+// Routes - Require authentication for chat using macro
 export const chatController = new Elysia()
+  .use(betterAuth)
   .post('/chat', sendMessage, {
+    // auth: true,
     body: ChatRequestDto,
     response: ChatResponseDto,
   })

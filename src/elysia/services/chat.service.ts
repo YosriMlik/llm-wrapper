@@ -1,9 +1,9 @@
 import { createOpenRouterService } from './openrouter'
-import { DEFAULT_AI_MODEL } from '../config/ai-models-config'
+import { DEFAULT_AI_MODEL } from '../config/ai-models.config'
 import type { ChatMessage, ChatRequest, ChatResponse } from '../models/chat'
 
 export class ChatService {
-  static async sendMessage(request: ChatRequest): Promise<ChatResponse> {
+  async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     const { message, messages, model } = request
 
     // Validate message

@@ -1,12 +1,12 @@
 // Free tier AI models from OpenRouter
 export const FREE_AI_MODELS = [
-  'xiaomi/mimo-v2-flash:free',
   'nvidia/nemotron-3-nano-30b-a3b:free',
-  //'openai/gpt-oss-120b:free',
-  'mistralai/devstral-2512:free',
+  'google/gemma-3n-e2b-it:free',
+  'arcee-ai/trinity-large-preview:free',
+  'liquid/lfm-2.5-1.2b-instruct:free',
 ] as const
 
-export const DEFAULT_AI_MODEL = 'mistralai/devstral-2512:free'
+export const DEFAULT_AI_MODEL = 'nvidia/nemotron-3-nano-30b-a3b:free'
 
 // Helper function to get display name (remove :free suffix)
 export function getAiModelDisplayName(model: string): string {

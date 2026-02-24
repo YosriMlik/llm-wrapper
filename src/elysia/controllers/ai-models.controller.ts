@@ -1,23 +1,19 @@
-import { Elysia, t } from 'elysia'
-import { AiModelsService } from '../services/ai-models.service'
+import { Elysia } from 'elysia'
+import { AiModelDto, GetAiModelsResponseDto } from '../dtos/ai-models.dto'
+import { optionalAuth } from '../middleware/auth.middleware'
 
-// DTOs
-const AiModelDto = t.Object({
-  id: t.String(),
-  name: t.String(),
-})
+// Handlers - will use injected services
+const getAiModels = (context: any) => {
+  const { services, user } = context
+  // Optional: Check if user can access AI models
+  if (user && !services.auth.canAccessAiModels(user)) {
+    throw new Error('Access denied to AI models')
+  }
 
-const GetAiModelsResponseDto = t.Object({
-  models: t.Array(AiModelDto),
-  default: t.String(),
-})
+  const config = services.aiModels.getAiModels()
 
-// Handlers
-const getAiModels = async () => {
-  const config = AiModelsService.getAiModels()
-  
   return {
-    models: config.models.map(model => ({
+    models: config.models.map((model: any) => ({
       id: model.id,
       name: model.name,
     })),
@@ -25,8 +21,10 @@ const getAiModels = async () => {
   }
 }
 
-// Routes
+// Routes - Using optional auth macro
 export const aiModelsController = new Elysia()
+  .use(optionalAuth)
   .get('/ai-models', getAiModels, {
+    optionalAuth: true,
     response: GetAiModelsResponseDto,
   })
