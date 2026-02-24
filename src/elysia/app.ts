@@ -16,11 +16,12 @@ export const app = new Elysia({ prefix: '/api' })
   // Set up dependency injection with decorators
   .decorate('services', {
     aiModels: aiModelsService,
-    auth: authService,
+    // auth: authService,
     chat: chatService
   })
   .use(cors({
-    origin: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+    // origin: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+    origin: "*", // Allow all origins temporarily
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
