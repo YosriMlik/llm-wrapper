@@ -4,16 +4,17 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUser } from "@/hooks/use-user"
+
 import {
   Plus,
-  Star,
-  Archive,
-  Puzzle,
   Search,
   MessageCircle,
   Settings,
   HelpCircle,
-  X
+  X,
+  LogIn,
+  Loader2,
 } from "lucide-react";
 import {
   Tooltip,
@@ -22,6 +23,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip"
 import { ComingSoonDialog } from "./coming-soon-dialog";
+import { GoogleAuthDialog } from "./auth/GoogleAuthDialog";
 import { cn } from "@/lib/utils";
 
 interface Chat {
@@ -42,6 +44,10 @@ interface SidebarProps {
 
 export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClose, isCollapsed = false }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user, loading, error } = useUser()
+
+  // Access user data directly from database
+  const { name, email, image, id } = user || {}
 
   const filteredChats = chats.filter(
     (chat) =>
@@ -131,7 +137,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
                           "h-auto w-full p-2 justify-center hover:bg-accent hover:text-accent-foreground",
                           selectedChatId === chat.id && "bg-accent text-accent-foreground"
                         )}>
-                        <MessageCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                        <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="right">
@@ -148,7 +154,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
                       selectedChatId === chat.id && "bg-accent text-accent-foreground"
                     )}>
                     <div className="flex w-full items-start gap-2">
-                      <MessageCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-sm font-medium">{chat.title}</div>
                         <div className="text-muted-foreground mt-0.5 truncate text-xs">
@@ -165,31 +171,112 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
       </div>
 
       {/* Footer */}
-      <div className={cn("mt-auto space-y-1 border-t", isCollapsed ? "p-2" : "p-2")}>
-        {isCollapsed ? (
+      <div className={cn("mt-auto space-y-1 border-t", isCollapsed ? "p-2 flex flex-col items-center" : "p-2")}>
+        {loading ? (
+          isCollapsed ? (
+            <div className="flex w-full justify-center p-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : (
+            <div className="flex w-full items-center gap-2 px-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="text-sm">Loading...</div>
+            </div>
+          )
+        ) : user ? (
+          isCollapsed ? (
+            <div className="flex w-full justify-center p-2">
+              {image && (
+                <img 
+                  src={image} 
+                  alt={name || 'User'} 
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+            </div>
+          ) : (
+            <div className="flex w-full items-center gap-2 px-2">
+              {image && (
+                <img 
+                  src={image} 
+                  alt={name || 'User'} 
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+              <div className="text-sm">{name || email}</div>
+            </div>
+          )
+        ) : null}
+        {!loading && !user && (isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
-              <ComingSoonDialog functionality="Settings">
+              <GoogleAuthDialog functionality="Settings">
                 <Button 
                   variant="ghost" 
                   className="text-muted-foreground w-full justify-center p-2 gap-2">
-                  <Settings className="h-4 w-4" />
+                  <LogIn className="h-4 w-4" />
                 </Button>
-              </ComingSoonDialog>
+              </GoogleAuthDialog>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Log In</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <GoogleAuthDialog functionality="Settings">
+            <Button 
+              variant="ghost" 
+              className="text-muted-foreground w-full justify-start gap-2">
+              <LogIn className="h-4 w-4" />
+              <span>Log In</span>
+            </Button>
+          </GoogleAuthDialog>
+        ))}
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {user ? (
+                <ComingSoonDialog functionality="Settings">
+                  <Button 
+                    variant="ghost" 
+                    className="text-muted-foreground w-full justify-center p-2 gap-2">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </ComingSoonDialog>
+              ) : (
+                <GoogleAuthDialog functionality="Settings">
+                  <Button 
+                    variant="ghost" 
+                    className="text-muted-foreground w-full justify-center p-2 gap-2">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </GoogleAuthDialog>
+              )}
             </TooltipTrigger>
             <TooltipContent side="right">
               <p>Settings</p>
             </TooltipContent>
           </Tooltip>
         ) : (
-          <ComingSoonDialog functionality="Settings">
-            <Button 
-              variant="ghost" 
-              className="text-muted-foreground w-full justify-start gap-2">
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </Button>
-          </ComingSoonDialog>
+          user ? (
+            <ComingSoonDialog functionality="Settings">
+              <Button 
+                variant="ghost" 
+                className="text-muted-foreground w-full justify-start gap-2">
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Button>
+            </ComingSoonDialog>
+          ) : (
+            <GoogleAuthDialog functionality="Settings">
+              <Button 
+                variant="ghost" 
+                className="text-muted-foreground w-full justify-start gap-2">
+                <Settings className="h-4 w-4" />
+                <span>Settings</span>
+              </Button>
+            </GoogleAuthDialog>
+          )
         )}
         {isCollapsed ? (
           <Tooltip>

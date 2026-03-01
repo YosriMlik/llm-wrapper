@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia'
-import { HealthResponseDto } from '../dtos/health.dto'
 
 // Handlers
 const getHealth = () => {
@@ -12,6 +11,4 @@ const getHealth = () => {
 
 // Routes
 export const healthController = new Elysia()
-  .get('/', getHealth, {
-    response: HealthResponseDto,
-  })
+  .get('/', getHealth, )

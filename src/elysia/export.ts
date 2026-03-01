@@ -4,7 +4,7 @@ export { ChatService } from './services/chat.service'
 export { AuthService } from './services/auth.service'
 
 // Export auth configuration
-export { auth } from './config/auth.config'
+export { auth } from './config/better-auth.config'
 
 // Export types for server components
 export type { AiModel, AiModelConfig } from './models/ai-model'

@@ -3,24 +3,29 @@ import { cors } from '@elysiajs/cors'
 import { healthController } from './controllers/health.controller'
 import { aiModelsController } from './controllers/ai-models.controller'
 import { chatController } from './controllers/chat.controller'
+import { userController } from './controllers/user.controller'
 import { AiModelsService } from './services/ai-models.service'
-import { AuthService } from './services/auth.service'
+//import { AuthService } from './services/auth.service'
 import { ChatService } from './services/chat.service'
+import { UserService } from './services/user.service'
+import { authController, OpenAPI } from './controllers/auth.controller'
+import { openapi } from '@elysiajs/openapi'
+import { node } from '@elysiajs/node'
 
 // Create service instances for dependency injection
 const aiModelsService = new AiModelsService()
-const authService = new AuthService()
 const chatService = new ChatService()
+const userService = new UserService()
 
-export const app = new Elysia({ prefix: '/api' })
+export const app = new Elysia({ prefix: '/api', adapter: node() })
   // Set up dependency injection with decorators
   .decorate('services', {
     aiModels: aiModelsService,
-    // auth: authService,
-    chat: chatService
+    chat: chatService,
+    user: userService
   })
   .use(cors({
-    // origin: process.env.NEXT_PUBLIC_BETTER_AUTH_URL || "http://localhost:3000",
+    // origin: process.env.BETTER_AUTH_URL || "http://localhost:3000",
     origin: "*", // Allow all origins temporarily
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
@@ -44,5 +49,19 @@ export const app = new Elysia({ prefix: '/api' })
     return { error: errorMessage }
   })
   .use(healthController)
+  .use(authController)
+  .use(userController)
   .use(aiModelsController)
   .use(chatController)
+  .onStart(({ routes }) => {
+    console.log('Elysia routes registered:')
+    routes.forEach(route => {
+      console.log(`${route.method} ${route.path}`)
+    })
+  })
+  .use(openapi({
+    documentation: {
+      components: await OpenAPI.components,
+      paths: await OpenAPI.getPaths()
+    }
+  }))

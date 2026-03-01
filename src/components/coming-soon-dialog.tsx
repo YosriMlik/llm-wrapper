@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useEffect, useState } from "react";
 
 interface ComingSoonDialogProps {
   children: React.ReactNode;
@@ -17,6 +18,16 @@ interface ComingSoonDialogProps {
 }
 
 export function ComingSoonDialog({ children, functionality }: ComingSoonDialogProps) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return <>{children}</>;
+  }
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
