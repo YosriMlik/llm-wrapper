@@ -63,7 +63,7 @@ export const userController = new Elysia({ prefix: '/users' })
   })
   .get('/me', async ({ headers, set }) => {
     try {
-      const session = await auth.api.getSession({ headers: toHeadersInit(headers) })
+      const session = await auth.api.getSession({ headers })
       const userId =
         session?.user?.id ??
         getUserIdFromSessionDataCookie(headers.cookie ?? '')
