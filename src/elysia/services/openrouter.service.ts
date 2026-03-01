@@ -34,7 +34,7 @@ export class OpenRouterService {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.apiKey}`,
-        'HTTP-Referer': process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_BETTER_AUTH_URL || 'http://localhost:3000',
         'X-Title': 'Chatbot App',
       },
       body: JSON.stringify(requestBody),

@@ -179,7 +179,7 @@ npm install better-auth better-sqlite3 @elysiajs/cors
 ### 2. Environment Variables
 ```env
 BETTER_AUTH_SECRET=your-32-char-secret-key
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 OPENROUTER_API_KEY=your-openrouter-key
 ```
 

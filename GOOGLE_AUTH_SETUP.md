@@ -24,7 +24,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 # Your existing variables
 OPENROUTER_API_KEY=
 BETTER_AUTH_SECRET=
-BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
 DATABASE_URL=
 ```
 
@@ -77,7 +77,7 @@ export const auth = betterAuth({
     },
   },
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL!,
+  baseURL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL!,
 })
 
 export type Session = typeof auth.$Infer.Session.session
