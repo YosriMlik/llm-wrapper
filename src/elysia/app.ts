@@ -25,11 +25,10 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
     user: userService
   })
   .use(cors({
-    // origin: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    origin: "*", // Allow all origins temporarily
+    origin: ["https://llm-wrapper-ymlik.vercel.app", "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Origin"],
   }))
   .onError(({ code, error, set }) => {
     // Get error message safely
