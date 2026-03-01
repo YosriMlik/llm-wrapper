@@ -25,6 +25,8 @@ import {
 import { ComingSoonDialog } from "./coming-soon-dialog";
 import { GoogleAuthDialog } from "./auth/GoogleAuthDialog";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/elysia/config/better-auth-client";
+
 
 interface Chat {
   id: string;
@@ -76,7 +78,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>New Chat</p>
+                <p>New Chat {!authClient.accountInfo}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
