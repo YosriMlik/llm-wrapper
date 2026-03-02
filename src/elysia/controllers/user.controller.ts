@@ -62,24 +62,45 @@ const getUserFromSessionDataCookie = (cookieHeader: string) => {
 }
 
 export const userController = new Elysia({ prefix: '/users' })
-  .post('/sign-out', async ({ set, cookie }) => {
+  .post('/sign-out', async ({ set, setCookie }) => {
     try {
       console.log('[SignOut] Clearing cookies...')
       
-      // Clear all better-auth cookies
+      // Clear all better-auth cookies by setting them to expire
       const cookieNames = [
         'better-auth.session_data',
         'better-auth.session_token',
         'better-auth.state',
-        '__Secure-better-auth.session_data',
-        '__Secure-better-auth.session_token',
-        '__Secure-better-auth.state',
       ]
       
       for (const name of cookieNames) {
-        if (cookie[name]) {
-          console.log('[SignOut] Clearing cookie:', name)
-          cookie[name].remove()
+        console.log('[SignOut] Clearing cookie:', name)
+        setCookie(name, '', {
+          maxAge: 0,
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+        })
+      }
+      
+      // Also clear secure versions in production
+      if (process.env.NODE_ENV === 'production') {
+        const secureCookieNames = [
+          '__Secure-better-auth.session_data',
+          '__Secure-better-auth.session_token',
+          '__Secure-better-auth.state',
+        ]
+        
+        for (const name of secureCookieNames) {
+          console.log('[SignOut] Clearing secure cookie:', name)
+          setCookie(name, '', {
+            maxAge: 0,
+            path: '/',
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+          })
         }
       }
       
