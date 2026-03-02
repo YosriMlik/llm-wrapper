@@ -60,9 +60,13 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
       console.log(`${route.method} ${route.path}`)
     })
   })
-  .use(openapi({
+
+// Only enable OpenAPI in development
+if (process.env.NODE_ENV !== 'production') {
+  app.use(openapi({
     documentation: {
       components: await OpenAPI.components,
       paths: await OpenAPI.getPaths()
     }
   }))
+}
