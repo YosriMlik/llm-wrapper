@@ -11,6 +11,7 @@ import { UserService } from './services/user.service'
 import { authController, OpenAPI } from './controllers/auth.controller'
 import { openapi } from '@elysiajs/openapi'
 import { node } from '@elysiajs/node'
+import { debugController } from './controllers/debug.controller'
 
 // Create service instances for dependency injection
 const aiModelsService = new AiModelsService()
@@ -53,6 +54,7 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
   .use(userController)
   .use(aiModelsController)
   .use(chatController)
+  .use(debugController)
   .onStart(({ routes }) => {
     console.log('Elysia routes registered:')
     routes.forEach(route => {
