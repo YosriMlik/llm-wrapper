@@ -10,16 +10,16 @@ export const authController = new Elysia({ name: 'better-auth' })
       async resolve({ set, request }) {
         try {
           const cookieHeader = request.headers.get("cookie") || ""
-          console.log('[Auth] Cookie header:', cookieHeader.slice(0, 100))
+          console.log('[Elysia] [Auth] Cookie header:', cookieHeader.slice(0, 100))
           
           // Use manual cookie parsing for session_data cookie
           const session = getSessionFromCookie(cookieHeader)
           
-          console.log('[Auth] Session:', session ? 'Found' : 'Not found')
-          console.log('[Auth] User:', session?.user?.email || 'No user')
+          console.log('[Elysia] [Auth] Session:', session ? 'Found' : 'Not found')
+          console.log('[Elysia] [Auth] User:', session?.user?.email || 'No user')
 
           if (!session?.user) {
-            console.log('[Auth] Authentication failed - no session')
+            console.log('[Elysia] [Auth] Authentication failed - no session')
             set.status = 401
             return {
               error: 'Unauthorized - Please sign in'
@@ -31,7 +31,7 @@ export const authController = new Elysia({ name: 'better-auth' })
             session: session.session
           }
         } catch (error) {
-          console.error('[Auth] Authentication error:', error)
+          console.error('[Elysia] [Auth] Authentication error:', error)
           set.status = 401
           return {
             error: 'Authentication failed'

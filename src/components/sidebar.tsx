@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip"
 import { ComingSoonDialog } from "./coming-soon-dialog";
 import { GoogleAuthDialog } from "./auth/GoogleAuthDialog";
+import { SettingsDialog } from "./settings-dialog";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/elysia/config/better-auth-client";
 
@@ -201,13 +202,13 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
           <Tooltip>
             <TooltipTrigger asChild>
               {user ? (
-                <ComingSoonDialog functionality="Settings">
+                <SettingsDialog>
                   <Button 
                     variant="ghost" 
                     className="text-muted-foreground w-full justify-center p-2 gap-2">
                     <Settings className="h-4 w-4" />
                   </Button>
-                </ComingSoonDialog>
+                </SettingsDialog>
               ) : (
                 <GoogleAuthDialog functionality="Settings">
                   <Button 
@@ -219,19 +220,19 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
               )}
             </TooltipTrigger>
             <TooltipContent side="right">
-              <p>Settings</p>
+              <p>{user ? 'Settings' : 'Settings'}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
           user ? (
-            <ComingSoonDialog functionality="Settings">
+            <SettingsDialog>
               <Button 
                 variant="ghost" 
                 className="text-muted-foreground w-full justify-start gap-2 text-sm">
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </Button>
-            </ComingSoonDialog>
+            </SettingsDialog>
           ) : (
             <GoogleAuthDialog functionality="Settings">
               <Button 

@@ -12,12 +12,15 @@ export function useUser() {
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refetchTrigger, setRefetchTrigger] = useState(0)
 
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true)
       try {
         const response = await fetch('/api/users/me', {
-          credentials: 'include', // Important: include cookies
+          credentials: 'include',
+          cache: 'no-store', // Don't cache
           headers: {
             'Content-Type': 'application/json',
           },
@@ -49,7 +52,9 @@ export function useUser() {
     }
 
     fetchUser()
-  }, [])
+  }, [refetchTrigger])
 
-  return { user, loading, error }
+  const refetch = () => setRefetchTrigger(prev => prev + 1)
+
+  return { user, loading, error, refetch }
 }

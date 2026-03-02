@@ -62,6 +62,35 @@ const getUserFromSessionDataCookie = (cookieHeader: string) => {
 }
 
 export const userController = new Elysia({ prefix: '/users' })
+  .post('/sign-out', async ({ set, cookie }) => {
+    try {
+      console.log('[SignOut] Clearing cookies...')
+      
+      // Clear all better-auth cookies
+      const cookieNames = [
+        'better-auth.session_data',
+        'better-auth.session_token',
+        'better-auth.state',
+        '__Secure-better-auth.session_data',
+        '__Secure-better-auth.session_token',
+        '__Secure-better-auth.state',
+      ]
+      
+      for (const name of cookieNames) {
+        if (cookie[name]) {
+          console.log('[SignOut] Clearing cookie:', name)
+          cookie[name].remove()
+        }
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error('[SignOut] Error:', error)
+      set.status = 500
+      return { success: false, error: 'Failed to sign out' }
+    }
+  })
+  
   .get('/debug', async ({ headers }) => {
     const cookieHeader = headers.cookie ?? ''
     
