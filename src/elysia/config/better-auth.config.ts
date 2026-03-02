@@ -42,11 +42,11 @@ export const auth = betterAuth({
       enabled: true,
       maxAge: 60 * 5,
     },
-    // cookieAttributes: {
-    //   secure: true, // Required for HTTPS in production
-    //   sameSite: 'lax',
-    //   path: '/',
-    // }
+    cookieAttributes: {
+      secure: true, // Required for HTTPS in production
+      sameSite: 'lax',
+      path: '/',
+    }
   },
   user: {
     additionalFields: {

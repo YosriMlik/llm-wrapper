@@ -1,9 +1,12 @@
 import { createOpenRouterService } from './openrouter.service'
 import { DEFAULT_AI_MODEL } from '../config/ai-models.config'
 import type { ChatMessage, ChatRequest, ChatResponse } from '../models/chat'
+import { db } from '@/lib/db'
+import { chatHistory } from '@/lib/schema'
+import { eq, desc } from 'drizzle-orm'
 
 export class ChatService {
-  async sendMessage(request: ChatRequest): Promise<ChatResponse> {
+  async sendMessage(request: ChatRequest, userId?: string): Promise<ChatResponse> {
     const { message, messages, model } = request
 
     // Validate message

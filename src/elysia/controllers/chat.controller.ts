@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { ChatMessageDto, ChatRequestDto, ChatResponseDto } from '../dtos/chat.dto'
+import { ChatRequestDto, ChatResponseDto } from '../dtos/chat.dto'
 // import { betterAuth } from '../middleware/auth.middleware' // Disabled for deployment
 import type { ChatRequest } from '../models/chat'
 // import type { User } from '../config/auth.config' // Disabled for deployment

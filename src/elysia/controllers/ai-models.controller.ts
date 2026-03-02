@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { AiModelDto, GetAiModelsResponseDto } from '../dtos/ai-models.dto'
+import { GetAiModelsResponseDto } from '../dtos/ai-models.dto'
 // import { optionalAuth } from '../middleware/auth.middleware' // Disabled for deployment
 
 // Handlers - will use injected services

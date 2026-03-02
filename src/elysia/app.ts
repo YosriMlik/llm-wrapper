@@ -1,6 +1,5 @@
 import { Elysia } from 'elysia'
 import { cors } from '@elysiajs/cors'
-import { healthController } from './controllers/health.controller'
 import { aiModelsController } from './controllers/ai-models.controller'
 import { chatController } from './controllers/chat.controller'
 import { userController } from './controllers/user.controller'
@@ -48,7 +47,6 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
     set.status = 500
     return { error: errorMessage }
   })
-  .use(healthController)
   .use(authController)
   .use(userController)
   .use(aiModelsController)

@@ -15,6 +15,7 @@ import {
   X,
   LogIn,
   Loader2,
+  VerifiedIcon
 } from "lucide-react";
 import {
   Tooltip,
@@ -197,7 +198,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
               )}
             </div>
           ) : (
-            <div className="flex w-full items-center gap-2 px-2">
+            <div className="flex w-full items-center gap-2 px-2 pb-3 pt-2 border-b">
               {image && (
                 <img 
                   src={image} 
@@ -205,7 +206,10 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
                   className="w-6 h-6 rounded-full"
                 />
               )}
-              <div className="text-sm">{name || email}</div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm text-foreground truncate">{name || email}</span>
+                <VerifiedIcon className="w-4 h-4 " />
+              </div>
             </div>
           )
         ) : null}
@@ -228,7 +232,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
           <GoogleAuthDialog functionality="Settings">
             <Button 
               variant="ghost" 
-              className="text-muted-foreground w-full justify-start gap-2">
+              className="text-muted-foreground w-full justify-start gap-2 text-sm">
               <LogIn className="h-4 w-4" />
               <span>Log In</span>
             </Button>
@@ -264,7 +268,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
             <ComingSoonDialog functionality="Settings">
               <Button 
                 variant="ghost" 
-                className="text-muted-foreground w-full justify-start gap-2">
+                className="text-muted-foreground w-full justify-start gap-2 text-sm">
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </Button>
@@ -273,7 +277,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
             <GoogleAuthDialog functionality="Settings">
               <Button 
                 variant="ghost" 
-                className="text-muted-foreground w-full justify-start gap-2">
+                className="text-muted-foreground w-full justify-start gap-2 text-sm">
                 <Settings className="h-4 w-4" />
                 <span>Settings</span>
               </Button>
@@ -299,7 +303,7 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
           <ComingSoonDialog functionality="Help & Support">
             <Button 
               variant="ghost" 
-              className="text-muted-foreground w-full justify-start gap-2">
+              className="text-muted-foreground w-full justify-start gap-2 text-sm">
               <HelpCircle className="h-4 w-4" />
               <span>Help & Support</span>
             </Button>

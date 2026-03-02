@@ -1,17 +1,10 @@
 import { db } from '@/lib/db'
 import { users, sessions } from '@/lib/schema'
 import { eq } from 'drizzle-orm'
-
-export interface UserData {
-  id: string
-  name: string
-  email: string
-  image: string | null
-  role: string | null
-}
+import { User } from '../models/user'
 
 export class UserService {
-  async getUserById(userId: string): Promise<UserData | null> {
+  async getUserById(userId: string): Promise<User | null> {
     try {
       const user = await db.select({
         id: users.id,
@@ -28,7 +21,7 @@ export class UserService {
     }
   }
 
-  async getUserByEmail(email: string): Promise<UserData | null> {
+  async getUserByEmail(email: string): Promise<User | null> {
     try {
       const user = await db.select({
         id: users.id,
@@ -45,7 +38,7 @@ export class UserService {
     }
   }
 
-  async getCurrentUserFromSession(sessionId: string): Promise<UserData | null> {
+  async getCurrentUserFromSession(sessionId: string): Promise<User | null> {
     try {
       // Join with sessions table to get user from session
       const result = await db.select({
