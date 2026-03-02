@@ -24,15 +24,22 @@ function decodeSessionData(value: string) {
 
 // For Elysia controllers - accepts cookie header string
 export function getSessionFromCookie(cookieHeader: string): { user: any; session: any } | null {
-  const sessionDataCookie = getCookieValue(cookieHeader, 'better-auth.session_data')
+  // Try both secure and non-secure cookie names
+  let sessionDataCookie = getCookieValue(cookieHeader, '__Secure-better-auth.session_data')
   
   if (!sessionDataCookie) {
+    sessionDataCookie = getCookieValue(cookieHeader, 'better-auth.session_data')
+  }
+  
+  if (!sessionDataCookie) {
+    console.log('[Auth] No session_data cookie found. Available cookies:', cookieHeader.split(';').map(c => c.trim().split('=')[0]))
     return null
   }
 
   const sessionData = decodeSessionData(sessionDataCookie)
   
   if (!sessionData?.session) {
+    console.log('[Auth] Failed to decode session data')
     return null
   }
 

@@ -10,7 +10,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL! })
 const db = drizzle(pool, { schema })
 
 export const auth = betterAuth({
-  //basePath: "/auth",
+  basePath: "/api/auth",
   database: drizzleAdapter(db, {
     provider: "pg", // PostgreSQL provider
     usePlural: true,
@@ -25,7 +25,6 @@ export const auth = betterAuth({
   advanced: { 
     database: { generateId: false },
     useSecureCookies: process.env.NODE_ENV === 'production',
-    cookiePrefix: 'better-auth',
   },
   emailAndPassword: {
     enabled: true
