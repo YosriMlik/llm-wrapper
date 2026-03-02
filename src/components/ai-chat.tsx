@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "./sidebar";
 import { WelcomeScreen } from "./welcome-screen";
 import { ChatInterface } from "./chat-interface";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config"
+import { useUser } from "@/hooks/use-user"
 
 interface Message {
   id: string;
@@ -18,22 +19,21 @@ interface Message {
   content: string;
 }
 
-interface Chat {
-  id: string;
-  title: string;
-  preview: string;
-  timestamp: Date;
-  messages: Message[];
-}
-
 export default function AiChat() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
-  const [chats, setChats] = useState<Chat[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AI_MODEL);
+  const { user } = useUser()
+
+  const refreshChatList = () => {
+    // Call the global refresh function exposed by ChatList
+    if (typeof window !== 'undefined' && (window as any).__refreshChatList) {
+      (window as any).__refreshChatList();
+    }
+  };
 
   const handleNewChat = () => {
     setSelectedChatId(null);
@@ -41,25 +41,29 @@ export default function AiChat() {
     setInput("");
   };
 
-  const handleSelectChat = (chatId: string) => {
-    const chat = chats.find((c) => c.id === chatId);
-    if (chat) {
-      setSelectedChatId(chatId);
-      setMessages(chat.messages);
+  const handleSelectChat = async (chatId: string) => {
+    setSelectedChatId(chatId);
+    
+    // Fetch full chat from API
+    try {
+      const response = await fetch(`/api/chat/history/${chatId}`, {
+        credentials: 'include',
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.chat) {
+          const loadedMessages = data.chat.messages || []
+          setMessages(loadedMessages)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load chat:', error)
     }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    const newChatId = Date.now().toString();
-    const newChat: Chat = {
-      id: newChatId,
-      title: suggestion.slice(0, 30) + "...",
-      preview: suggestion.slice(0, 50) + "...",
-      timestamp: new Date(),
-      messages: [],
-    };
-    setChats((prev) => [newChat, ...prev]);
-    setSelectedChatId(newChatId);
+    setSelectedChatId(null);
     setMessages([]);
     setInput(suggestion);
     // Trigger submit after a short delay
@@ -79,21 +83,9 @@ export default function AiChat() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    // If no chat is selected, create a new one
+    // Start with current chat or create new one
     let currentChatId = selectedChatId;
-    if (!currentChatId) {
-      currentChatId = Date.now().toString();
-      const newChat: Chat = {
-        id: currentChatId,
-        title: input.slice(0, 30) + "...",
-        preview: input.slice(0, 50) + "...",
-        timestamp: new Date(),
-        messages: [],
-      };
-      setChats((prev) => [newChat, ...prev]);
-      setSelectedChatId(currentChatId);
-    }
-
+    
     const userMessage: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -111,8 +103,6 @@ export default function AiChat() {
         role: msg.role,
         content: msg.content,
       }));
-
-      //console.log("selectedModel is", selectedModel)
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -141,19 +131,37 @@ export default function AiChat() {
       const finalMessages = [...updatedMessages, aiMessage];
       setMessages(finalMessages);
 
-      // Update chat in sidebar
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === currentChatId
-            ? {
-                ...chat,
-                messages: finalMessages,
-                title: updatedMessages[0]?.content.slice(0, 30) + "..." || chat.title,
-                preview: updatedMessages[0]?.content.slice(0, 50) + "..." || chat.preview,
+      // Save to database if user is logged in
+      if (user) {
+        try {
+          const saveResponse = await fetch('/api/chat/history', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              messages: finalMessages,
+              model: selectedModel,
+              chatId: currentChatId || undefined,
+            }),
+          })
+          
+          if (saveResponse.ok) {
+            const saveData = await saveResponse.json()
+            if (saveData.chatId) {
+              // Update selected chat ID if it's a new chat
+              if (!currentChatId) {
+                setSelectedChatId(saveData.chatId)
               }
-            : chat
-        )
-      );
+              // Refresh the chat list in sidebar
+              refreshChatList()
+            }
+          }
+        } catch (error) {
+          console.error('Failed to save chat history:', error)
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
       const errorMessage: Message = {
@@ -185,7 +193,6 @@ export default function AiChat() {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}>
         <Sidebar
-          chats={chats}
           selectedChatId={selectedChatId}
           onNewChat={handleNewChat}
           onSelectChat={handleSelectChat}

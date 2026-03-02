@@ -24,6 +24,8 @@ export const auth = betterAuth({
   plugins: [ openAPI() ],
   advanced: { 
     database: { generateId: false },
+    useSecureCookies: process.env.NODE_ENV === 'production',
+    cookiePrefix: 'better-auth',
   },
   emailAndPassword: {
     enabled: true
@@ -37,16 +39,11 @@ export const auth = betterAuth({
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+    updateAge: 60 * 60 * 24, // 1 day (session refreshes after 1 day of activity)
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5,
+      maxAge: 60 * 60 * 24 * 7, // 7 days - match session expiry
     },
-    cookieAttributes: {
-      secure: true, // Required for HTTPS in production
-      sameSite: 'lax',
-      path: '/',
-    }
   },
   user: {
     additionalFields: {
@@ -59,6 +56,11 @@ export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
 
   baseURL: process.env.BETTER_AUTH_URL!,
+  
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL!,
+    "http://localhost:3000",
+  ].filter(Boolean),
 })
 
 // Correct type inference for Better Auth

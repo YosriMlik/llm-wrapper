@@ -1,25 +1,47 @@
+// elysia/controllers/auth.controller.ts
 import { Elysia } from 'elysia'
 import { auth } from '../config/better-auth.config'
+import { getSessionFromCookie } from '../../lib/auth-server'
 
 export const authController = new Elysia({ name: 'better-auth' })
   .mount(auth.handler)
   .macro({
-    auth: {
-      async resolve({ status, request: { headers } }) {
-        const session = await auth.api.getSession({
-          headers
-        })
+    authenticated: {
+      async resolve({ set, request }) {
+        try {
+          const cookieHeader = request.headers.get("cookie") || ""
+          console.log('[Auth] Cookie header:', cookieHeader.slice(0, 100))
+          
+          // Use manual cookie parsing for session_data cookie
+          const session = getSessionFromCookie(cookieHeader)
+          
+          console.log('[Auth] Session:', session ? 'Found' : 'Not found')
+          console.log('[Auth] User:', session?.user?.email || 'No user')
 
-        if (!session) return status(401)
+          if (!session?.user) {
+            console.log('[Auth] Authentication failed - no session')
+            set.status = 401
+            return {
+              error: 'Unauthorized - Please sign in'
+            }
+          }
 
-        return {
-          user: session.user,
-          session: session.session
+          return {
+            user: session.user,
+            session: session.session
+          }
+        } catch (error) {
+          console.error('[Auth] Authentication error:', error)
+          set.status = 401
+          return {
+            error: 'Authentication failed'
+          }
         }
       }
     }
   })
 
+// OpenAPI schema exports...
 let _schema: ReturnType<typeof auth.api.generateOpenAPISchema>
 const getSchema = async () => (_schema ??= auth.api.generateOpenAPISchema())
 
@@ -34,7 +56,6 @@ export const OpenAPI = {
 
         for (const method of Object.keys(paths[path])) {
           const operation = (reference[key] as any)[method]
-
           operation.tags = ['Better Auth']
         }
       }

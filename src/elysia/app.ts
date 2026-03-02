@@ -30,6 +30,9 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
     allowedHeaders: ["Content-Type", "Authorization", "Origin", "Cookie"],
     exposeHeaders: ["Set-Cookie"],
   }))
+  .onRequest(({ request }: any) => {
+    console.log(`[Elysia] ${request.method} ${new URL(request.url).pathname}`)
+  })
   .onError(({ code, error, set }) => {
     // Get error message safely
     const errorMessage = error instanceof Error ?

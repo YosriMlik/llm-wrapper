@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/hooks/use-user"
+import { ChatList } from "./chat-list";
 
 import {
   Plus,
   Search,
-  MessageCircle,
   Settings,
   HelpCircle,
   X,
@@ -29,15 +29,7 @@ import { cn } from "@/lib/utils";
 import { authClient } from "@/elysia/config/better-auth-client";
 
 
-interface Chat {
-  id: string;
-  title: string;
-  preview: string;
-  timestamp: Date;
-}
-
 interface SidebarProps {
-  chats: Chat[];
   selectedChatId: string | null;
   onNewChat: () => void;
   onSelectChat: (chatId: string) => void;
@@ -45,18 +37,12 @@ interface SidebarProps {
   isCollapsed?: boolean;
 }
 
-export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClose, isCollapsed = false }: SidebarProps) {
+export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCollapsed = false }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const { user, loading, error } = useUser()
+  const { user, loading } = useUser()
 
   // Access user data directly from database
   const { name, email, image, id } = user || {}
-
-  const filteredChats = chats.filter(
-    (chat) =>
-      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.preview.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -129,45 +115,18 @@ export function Sidebar({ chats, selectedChatId, onNewChat, onSelectChat, onClos
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className={cn("space-y-1 pb-4", isCollapsed ? "px-2" : "px-4")}>
-              {filteredChats.map((chat) => (
-                isCollapsed ? (
-                  <Tooltip key={chat.id}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        onClick={() => onSelectChat(chat.id)}
-                        className={cn(
-                          "h-auto w-full p-2 justify-center hover:bg-accent hover:text-accent-foreground",
-                          selectedChatId === chat.id && "bg-accent text-accent-foreground"
-                        )}>
-                        <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>{chat.title}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Button
-                    key={chat.id}
-                    variant="ghost"
-                    onClick={() => onSelectChat(chat.id)}
-                    className={cn(
-                      "h-auto w-full p-3 justify-start text-left hover:bg-accent hover:text-accent-foreground",
-                      selectedChatId === chat.id && "bg-accent text-accent-foreground"
-                    )}>
-                    <div className="flex w-full items-start gap-2">
-                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">{chat.title}</div>
-                        <div className="text-muted-foreground mt-0.5 truncate text-xs">
-                          {chat.preview}
-                        </div>
-                      </div>
-                    </div>
-                  </Button>
-                )
-              ))}
+              <Suspense fallback={
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              }>
+                <ChatList 
+                  selectedChatId={selectedChatId}
+                  onSelectChat={onSelectChat}
+                  isCollapsed={isCollapsed}
+                  userId={id}
+                />
+              </Suspense>
             </div>
           </ScrollArea>
         </div>

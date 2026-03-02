@@ -1,12 +1,13 @@
+// elysia/services/chat.service.ts
 import { createOpenRouterService } from './openrouter.service'
 import { DEFAULT_AI_MODEL } from '../config/ai-models.config'
 import type { ChatMessage, ChatRequest, ChatResponse } from '../models/chat'
 import { db } from '@/lib/db'
 import { chatHistory } from '@/lib/schema'
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and } from 'drizzle-orm'
 
 export class ChatService {
-  async sendMessage(request: ChatRequest, userId?: string): Promise<ChatResponse> {
+  async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     const { message, messages, model } = request
 
     // Validate message
@@ -48,5 +49,120 @@ export class ChatService {
       console.error('OpenRouter API error:', error)
       throw new Error(error instanceof Error ? error.message : 'Failed to get AI response')
     }
+  }
+
+  // Chat History Methods - userId is now REQUIRED
+  async saveChatHistory(
+    userId: string, // ✅ Required, not optional
+    messages: ChatMessage[],
+    model: string,
+    chatId?: string
+  ): Promise<string> {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+
+    const title = this.generateChatTitle(messages)
+    const messagesJson = JSON.stringify(messages)
+
+    if (chatId) {
+      const [result] = await db
+        .update(chatHistory)
+        .set({
+          messages: messagesJson,
+          model,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(chatHistory.id, chatId), eq(chatHistory.userId, userId)))
+        .returning({ id: chatHistory.id })
+
+      if (!result) {
+        throw new Error('Chat not found or unauthorized')
+      }
+
+      return result.id
+    }
+
+    const [result] = await db
+      .insert(chatHistory)
+      .values({
+        userId,
+        title,
+        messages: messagesJson,
+        model,
+      })
+      .returning({ id: chatHistory.id })
+
+    return result.id
+  }
+
+  async getChatHistory(userId: string) {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+
+    const chats = await db
+      .select({
+        id: chatHistory.id,
+        title: chatHistory.title,
+        model: chatHistory.model,
+        createdAt: chatHistory.createdAt,
+        updatedAt: chatHistory.updatedAt,
+      })
+      .from(chatHistory)
+      .where(eq(chatHistory.userId, userId))
+      .orderBy(desc(chatHistory.updatedAt))
+
+    return chats
+  }
+
+  async getChatById(chatId: string, userId: string) {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+
+    const [chat] = await db
+      .select()
+      .from(chatHistory)
+      .where(and(eq(chatHistory.id, chatId), eq(chatHistory.userId, userId)))
+      .limit(1)
+
+    if (!chat) {
+      throw new Error('Chat not found')
+    }
+
+    return {
+      ...chat,
+      messages: JSON.parse(chat.messages) as ChatMessage[],
+    }
+  }
+
+  async deleteChat(chatId: string, userId: string): Promise<boolean> {
+    if (!userId) {
+      throw new Error('User ID is required')
+    }
+
+    const [result] = await db
+      .delete(chatHistory)
+      .where(and(eq(chatHistory.id, chatId), eq(chatHistory.userId, userId)))
+      .returning({ id: chatHistory.id })
+
+    if (!result) {
+      throw new Error('Chat not found or unauthorized')
+    }
+
+    return true
+  }
+
+  // Helper method
+  private generateChatTitle(messages: ChatMessage[]): string {
+    const firstMessage = messages.find(m => m.role === 'user')?.content
+    if (!firstMessage) return 'New Chat'
+    
+    // Clean and truncate
+    return firstMessage
+      .replace(/\n/g, ' ')
+      .trim()
+      .slice(0, 60) + (firstMessage.length > 60 ? '...' : '')
   }
 }
