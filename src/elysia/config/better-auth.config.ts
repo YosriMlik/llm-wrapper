@@ -23,7 +23,7 @@ export const auth = betterAuth({
   }),
   plugins: [ openAPI() ],
   advanced: { 
-    database: { generateId: false }
+    database: { generateId: false },
   },
   emailAndPassword: {
     enabled: true
