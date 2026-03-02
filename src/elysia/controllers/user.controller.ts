@@ -62,7 +62,7 @@ const getUserFromSessionDataCookie = (cookieHeader: string) => {
 }
 
 export const userController = new Elysia({ prefix: '/users' })
-  .post('/sign-out', async ({ set, setCookie }) => {
+  .post('/sign-out', async ({ set, cookie }) => {
     try {
       console.log('[SignOut] Clearing cookies...')
       
@@ -75,7 +75,8 @@ export const userController = new Elysia({ prefix: '/users' })
       
       for (const name of cookieNames) {
         console.log('[SignOut] Clearing cookie:', name)
-        setCookie(name, '', {
+        cookie[name].set({
+          value: '',
           maxAge: 0,
           path: '/',
           httpOnly: true,
@@ -94,7 +95,8 @@ export const userController = new Elysia({ prefix: '/users' })
         
         for (const name of secureCookieNames) {
           console.log('[SignOut] Clearing secure cookie:', name)
-          setCookie(name, '', {
+          cookie[name].set({
+            value: '',
             maxAge: 0,
             path: '/',
             httpOnly: true,
