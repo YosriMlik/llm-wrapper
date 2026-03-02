@@ -4,91 +4,60 @@ import { auth } from '../config/better-auth.config'
 
 const userService = new UserService()
 
-const getCookieValue = (cookieHeader: string, name: string) => {
-  const parts = cookieHeader.split(';')
-  for (const part of parts) {
-    const trimmed = part.trim()
-    if (trimmed.startsWith(`${name}=`)) {
-      return trimmed.slice(name.length + 1)
-    }
-  }
-  return null
-}
-
-const decodeSessionData = (value: string) => {
-  const decoded = decodeURIComponent(value)
-  const normalized = decoded.replace(/-/g, '+').replace(/_/g, '/')
-  const padded = normalized + '==='.slice((normalized.length + 3) % 4)
-  const json = Buffer.from(padded, 'base64').toString('utf-8')
-  return JSON.parse(json)
-}
-
-const getUserIdFromSessionDataCookie = (cookieHeader: string) => {
-  const raw = getCookieValue(cookieHeader, 'better-auth.session_data')
-  if (!raw) return null
-  try {
-    const data = decodeSessionData(raw)
-    return data?.session?.user?.id ?? data?.session?.session?.userId ?? null
-  } catch {
-    return null
-  }
-}
-
-const toHeadersInit = (headers: Record<string, string | undefined>) => {
-  const entries = Object.entries(headers).filter(
-    (entry): entry is [string, string] => Boolean(entry[1])
-  )
-  return entries as [string, string][]
-}
-
 export const userController = new Elysia({ prefix: '/users' })
   .get('/debug', async ({ headers }) => {
     const cookieHeader = headers.cookie ?? ''
-    const rawSessionData = getCookieValue(cookieHeader, 'better-auth.session_data')
-    let decodedSessionData: unknown = null
-    if (rawSessionData) {
-      try {
-        decodedSessionData = decodeSessionData(rawSessionData)
-      } catch {
-        decodedSessionData = null
-      }
+    
+    // Try to get session using Better Auth
+    let session = null
+    try {
+      session = await auth.api.getSession({
+        headers: headers as any
+      })
+    } catch (err) {
+      console.error('Better Auth session error:', err)
     }
-
+    
+    // Check cookie formats for debugging
+    const hasSecurePrefix = cookieHeader.includes('__Secure-better-auth.session_data')
+    const hasNormalCookie = cookieHeader.includes('better-auth.session_data')
+    
     return {
       hasCookieHeader: Boolean(cookieHeader),
       cookieHeader,
-      hasSessionDataCookie: Boolean(rawSessionData),
-      decodedSessionData
+      hasSecureCookie: hasSecurePrefix,
+      hasNormalCookie: hasNormalCookie,
+      betterAuthSession: session ? 'Valid' : 'Invalid',
+      userId: session?.user?.id ?? null,
+      userName: session?.user?.name ?? null,
     }
   })
+  
   .get('/me', async ({ headers, set }) => {
     try {
-      const session = await auth.api.getSession({ headers: toHeadersInit(headers) })
-      const userId =
-        session?.user?.id ??
-        getUserIdFromSessionDataCookie(headers.cookie ?? '')
+      const session = await auth.api.getSession({
+        headers: headers as any
+      })
 
-      if (!userId) {
+      if (!session?.user) {
         set.status = 401
-        return { error: 'No session token provided' }
+        return { error: 'No session found' }
       }
 
-      const user = await userService.getUserById(userId)
-
-      if (!user) {
-        set.status = 404
-        return { error: 'User not found' }
-      }
+      // Optionally fetch additional user data from database
+      const user = await userService.getUserById(session.user.id)
 
       return {
         success: true,
-        user
+        user: user || session.user
       }
-    } catch {
-      set.status = 500
-      return { error: 'Internal server error' }
+    } catch (error) {
+      console.error('Session error:', error)
+      set.status = 401
+      return { error: 'Unauthorized' }
     }
   })
+  
   .get('/:id', async ({ params, set }) => {
     try {
       const user = await userService.getUserById(params.id)
@@ -102,7 +71,8 @@ export const userController = new Elysia({ prefix: '/users' })
         success: true,
         user
       }
-    } catch {
+    } catch (error) {
+      console.error('Get user error:', error)
       set.status = 500
       return { error: 'Internal server error' }
     }
