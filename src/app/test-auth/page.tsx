@@ -1,5 +1,5 @@
 // app/test-auth/page.tsx (Server Component)
-import { getServerSession } from "@/lib/auth-server"
+import { getServerSession } from "@/lib/better-auth-server"
 import { ChatService } from "@/elysia/export"
 import ProtectedApiTest from "./protected-api-test"
 

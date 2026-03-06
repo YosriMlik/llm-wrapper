@@ -53,7 +53,7 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
           const formattedChats: Chat[] = data.chats.map((chat: any) => ({
             id: chat.id,
             title: chat.title || 'Untitled Chat',
-            preview: chat.title?.slice(0, 50) + '...' || 'No messages',
+            preview: chat.title || 'No messages',
             timestamp: new Date(chat.createdAt),
           }));
           setChats(formattedChats);
@@ -111,7 +111,7 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
                 variant="ghost"
                 onClick={() => onSelectChat(chat.id)}
                 className={cn(
-                  "h-auto w-full p-2 justify-center hover:bg-accent hover:text-accent-foreground",
+                  "h-auto p-2 justify-center hover:bg-accent hover:text-accent-foreground",
                   selectedChatId === chat.id && "bg-accent text-accent-foreground"
                 )}>
                 <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -130,12 +130,12 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
               "h-auto w-full p-3 justify-start text-left hover:bg-accent hover:text-accent-foreground",
               selectedChatId === chat.id && "bg-accent text-accent-foreground"
             )}>
-            <div className="flex w-full items-start gap-2">
-              <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="flex w-full items-start justify-center gap-2">
+              <MessageCircle className="h-4 mt-1 w-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{chat.title}</div>
-                <div className="text-muted-foreground mt-0.5 truncate text-xs">
-                  {chat.preview}
+                <div className="text-sm font-medium">{chat.title.length > 29 ? chat.title.slice(0, 29) + '...' : chat.title}</div>
+                <div className="text-muted-foreground mt-0.5 text-xs">
+                  {chat.preview.length > 29 ? chat.preview.slice(0, 29) + '...' : chat.preview}
                 </div>
               </div>
             </div>

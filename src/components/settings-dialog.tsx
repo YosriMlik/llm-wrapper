@@ -32,7 +32,7 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
         credentials: 'include',
       });
 
-      console.log('[SignOut] Response:', response.status);
+      // console.log('[Out] Response:', response.status);
       
       // Reload to clear client state
       window.location.href = '/';

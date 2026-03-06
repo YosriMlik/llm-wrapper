@@ -101,7 +101,7 @@ export class ChatService {
       throw new Error('User ID is required')
     }
 
-    console.log('[ChatService] Fetching chat history for userId:', userId)
+    // console.log('[Service] Fetching chat history for userId:', userId)
 
     const chats = await db
       .select({
@@ -115,7 +115,7 @@ export class ChatService {
       .where(eq(chatHistory.userId, userId))
       .orderBy(desc(chatHistory.updatedAt))
 
-    console.log('[ChatService] Found', chats.length, 'chats for user:', userId)
+    // console.log('[Service] Found', chats.length, 'chats for user:', userId)
     return chats
   }
 

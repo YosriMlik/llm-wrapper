@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { LogIn, Loader2 } from "lucide-react"
 import { useState } from "react"
 
-import { authClient } from "@/elysia/config/better-auth-client";
+import { authClient } from "@/lib/better-auth-client";
 
 interface GoogleAuthDialogProps {
   children: React.ReactNode

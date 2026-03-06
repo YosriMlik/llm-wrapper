@@ -11,10 +11,12 @@
         "**/.plugin_symlinks": true,
         "**/__pycache__": true,
         "node_modules": true,
-        "**/.*": true,
         ".next": true,
         "package-lock.json": true,
-        ".vscode": true
+        ".vscode": true,
+        ".qoder": true,
+        ".env": true,
+        ".gitignore": false,
     },
     "hide-files.files": []
 }

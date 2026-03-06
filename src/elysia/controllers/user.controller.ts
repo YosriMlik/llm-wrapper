@@ -64,7 +64,7 @@ const getUserFromSessionDataCookie = (cookieHeader: string) => {
 export const userController = new Elysia({ prefix: '/users' })
   .post('/sign-out', async ({ set, cookie }) => {
     try {
-      console.log('[SignOut] Clearing cookies...')
+      // console.log('[Out] Clearing cookies...')
       
       // Clear all better-auth cookies by setting them to expire
       const cookieNames = [
@@ -74,7 +74,7 @@ export const userController = new Elysia({ prefix: '/users' })
       ]
       
       for (const name of cookieNames) {
-        console.log('[SignOut] Clearing cookie:', name)
+        // console.log('[Out] Clearing cookie:', name)
         cookie[name].set({
           value: '',
           maxAge: 0,
@@ -94,7 +94,7 @@ export const userController = new Elysia({ prefix: '/users' })
         ]
         
         for (const name of secureCookieNames) {
-          console.log('[SignOut] Clearing secure cookie:', name)
+          // console.log('[Out] Clearing secure cookie:', name)
           cookie[name].set({
             value: '',
             maxAge: 0,
