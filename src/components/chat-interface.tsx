@@ -55,7 +55,7 @@ export function ChatInterface({
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto py-6 px-2 sm:px-6">
         <div className="mx-auto max-w-8xl space-y-6">
           {displayMessages.map((message, index) => {
             const isUser = message.role === "user";
@@ -64,15 +64,15 @@ export function ChatInterface({
             const key = message.id || `message-${index}`;
             
             return (
-              <div key={key} className="flex items-start gap-3">
+              <div key={key} className="flex items-start gap-2 sm:gap-3">
                 {/* Left avatar (AI) */}
-                <div className="w-10 flex justify-start">
-                  {!isUser && (
+                <div className="sm:w-10 flex justify-start">
+                  {!isUser && window.innerWidth >= 700 && (
                     <Avatar>
                       <AvatarFallback>🤖</AvatarFallback>
                     </Avatar>
                   )}
-                </div>
+                  </div>
 
                 {/* Message in the middle */}
                 <div className={`flex-1 flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -166,7 +166,7 @@ export function ChatInterface({
                 </div>
 
                 {/* Right avatar (User) */}
-                <div className="w-10 flex justify-end">
+                <div className="sm:w-10 flex justify-end">
                   {isUser && (
                     <Avatar>
                       {user?.image && !imageError ? (
