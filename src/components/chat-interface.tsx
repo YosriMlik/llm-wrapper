@@ -8,6 +8,7 @@ import rehypeRaw from "rehype-raw";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Copy, Check } from "lucide-react";
+import { useUser } from "@/hooks/use-user";
 
 interface Message {
   id: string;
@@ -32,6 +33,8 @@ export function ChatInterface({
   isLoading = false,
 }: ChatInterfaceProps) {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const { user } = useUser();
 
   const handleCopy = async (content: string, messageId: string) => {
     try {
@@ -43,15 +46,25 @@ export function ChatInterface({
       console.error('Failed to copy text:', error);
     }
   };
+
+  // Add a temporary "thinking" message if loading
+  const displayMessages = isLoading 
+    ? [...messages, { id: 'loading', role: 'assistant' as const, content: '' }]
+    : messages;
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="mx-auto max-w-8xl space-y-6">
-          {(messages.length === 0 ? [exampleMessage] : messages).map((message) => {
+          {displayMessages.map((message, index) => {
             const isUser = message.role === "user";
+            const isThinking = message.id === 'loading';
+            // Use index as fallback if id is missing
+            const key = message.id || `message-${index}`;
+            
             return (
-              <div key={message.id} className="flex items-start gap-3">
+              <div key={key} className="flex items-start gap-3">
                 {/* Left avatar (AI) */}
                 <div className="w-10 flex justify-start">
                   {!isUser && (
@@ -67,6 +80,21 @@ export function ChatInterface({
                     {isUser ? (
                       <div className="bg-blue-200 dark:bg-blue-900 rounded-lg p-4 text-start">
                         <p>{message.content}</p>
+                      </div>
+                    ) : isThinking ? (
+                      <div className="bg-muted rounded-lg border p-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground text-sm">Thinking</span>
+                          <div className="flex gap-1">
+                            <div className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"></div>
+                            <div
+                              className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
+                              style={{ animationDelay: "0.1s" }}></div>
+                            <div
+                              className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
+                              style={{ animationDelay: "0.2s" }}></div>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="bg-muted rounded-lg border p-4">
@@ -118,7 +146,7 @@ export function ChatInterface({
                             {message.content}
                           </ReactMarkdown>
                         </div>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           <Button 
                             variant="ghost" 
                             size="sm" 
@@ -141,36 +169,22 @@ export function ChatInterface({
                 <div className="w-10 flex justify-end">
                   {isUser && (
                     <Avatar>
-                      <AvatarFallback className="bg-blue-200 dark:bg-blue-900">U</AvatarFallback>
+                      {user?.image && !imageError ? (
+                        <AvatarImage 
+                          src={user.image} 
+                          alt={user.name || 'User'}
+                          onError={() => setImageError(true)}
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-blue-200 dark:bg-blue-900">
+                        {user?.name?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
                     </Avatar>
                   )}
                 </div>
               </div>
             );
           })}
-          {isLoading && (
-            <div className="flex gap-4">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-blue-500">AI</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="bg-muted rounded-lg border p-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">Thinking</span>
-                    <div className="flex gap-1">
-                      <div className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"></div>
-                      <div
-                        className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
-                        style={{ animationDelay: "0.1s" }}></div>
-                      <div
-                        className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
-                        style={{ animationDelay: "0.2s" }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

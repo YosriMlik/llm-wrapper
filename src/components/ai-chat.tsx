@@ -7,6 +7,7 @@ import { ChatInterface } from "./chat-interface";
 import { ChatInput } from "./chat-input";
 import { ThemeToggle } from "./theme-toggle";
 import { ModelSelector } from "./model-selector";
+import { FetchLoader } from "./fetch-loader";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export default function AiChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingChat, setIsFetchingChat] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedModel, setSelectedModel] = useState(DEFAULT_AI_MODEL);
   const { user } = useUser()
@@ -43,6 +45,7 @@ export default function AiChat() {
 
   const handleSelectChat = async (chatId: string) => {
     setSelectedChatId(chatId);
+    setIsFetchingChat(true);
     
     // Fetch full chat from API
     try {
@@ -59,6 +62,8 @@ export default function AiChat() {
       }
     } catch (error) {
       console.error('Failed to load chat:', error)
+    } finally {
+      setIsFetchingChat(false);
     }
   };
 
@@ -130,37 +135,39 @@ export default function AiChat() {
 
       const finalMessages = [...updatedMessages, aiMessage];
       setMessages(finalMessages);
+      setIsLoading(false); // Stop loading immediately after showing AI response
 
-      // Save to database if user is logged in
+      // Save to database in background if user is logged in
       if (user) {
-        try {
-          const saveResponse = await fetch('/api/chat/history', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              messages: finalMessages,
-              model: selectedModel,
-              chatId: currentChatId || undefined,
-            }),
-          })
-          
-          if (saveResponse.ok) {
-            const saveData = await saveResponse.json()
-            if (saveData.chatId) {
-              // Update selected chat ID if it's a new chat
-              if (!currentChatId) {
-                setSelectedChatId(saveData.chatId)
+        // Don't await - let it happen in background
+        fetch('/api/chat/history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            messages: finalMessages,
+            model: selectedModel,
+            chatId: currentChatId || undefined,
+          }),
+        })
+          .then(async (saveResponse) => {
+            if (saveResponse.ok) {
+              const saveData = await saveResponse.json()
+              if (saveData.chatId) {
+                // Update selected chat ID if it's a new chat
+                if (!currentChatId) {
+                  setSelectedChatId(saveData.chatId)
+                }
+                // Refresh the chat list in sidebar
+                refreshChatList()
               }
-              // Refresh the chat list in sidebar
-              refreshChatList()
             }
-          }
-        } catch (error) {
-          console.error('Failed to save chat history:', error)
-        }
+          })
+          .catch((error) => {
+            console.error('Failed to save chat history:', error)
+          })
       }
     } catch (error) {
       console.error("Error:", error);
@@ -170,13 +177,13 @@ export default function AiChat() {
         content: `Sorry, I couldn't get a response. ${error instanceof Error ? error.message : "Please try again."}`,
       };
       setMessages([...updatedMessages, errorMessage]);
-    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div className="flex h-screen">
+      <FetchLoader isLoading={isFetchingChat} />
       {/* Overlay for mobile - only show when sidebar is open on mobile */}
       {isSidebarOpen && (
         <div
@@ -220,7 +227,7 @@ export default function AiChat() {
         </div>
         {/* Content Area */}
         <div className="flex-1 overflow-hidden">
-          {!selectedChatId ? (
+          {messages.length === 0 && !isLoading ? (
             <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
           ) : (
             <ChatInterface messages={messages} isLoading={isLoading} />
