@@ -168,7 +168,7 @@ export const userController = new Elysia({ prefix: '/users' })
       let user = session?.user
 
       if (!userId) {
-        console.log('Falling back to manual cookie parsing')
+        console.log('[🦊 Elysia] Falling back to manual cookie parsing')
         userId = getUserIdFromSessionDataCookie(headers.cookie ?? '')
         user = getUserFromSessionDataCookie(headers.cookie ?? '')
       }

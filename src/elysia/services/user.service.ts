@@ -16,7 +16,7 @@ export class UserService {
       
       return user[0] || null
     } catch (error) {
-      console.error('Error fetching user by ID:', error)
+      //console.error(`[🦊 User Service] Error fetching user by ID: ${error}`)
       return null
     }
   }

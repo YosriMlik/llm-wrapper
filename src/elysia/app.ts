@@ -10,11 +10,13 @@ import { UserService } from './services/user.service'
 import { authController, OpenAPI } from './controllers/auth.controller'
 import { openapi } from '@elysiajs/openapi'
 import { node } from '@elysiajs/node'
+import { BLUE, CYAN, RED, RESET, statusColor, YELLOW } from '@/lib/console-colors'
 
 // Create service instances for dependency injection
 const aiModelsService = new AiModelsService()
 const chatService = new ChatService()
 const userService = new UserService()
+
 
 export const app = new Elysia({ prefix: '/api', adapter: node() })
   // Set up dependency injection with decorators
@@ -30,8 +32,18 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
     allowedHeaders: ["Content-Type", "Authorization", "Origin", "Cookie"],
     exposeHeaders: ["Set-Cookie"],
   }))
-  .onRequest(({ request }: any) => {
-    console.log(`[Elysia] ${request.method} ${new URL(request.url).pathname}`)
+  // this dosent work idk why ...
+  // .onStart(({ routes }) => {
+  //   console.log('Elysia routes registered:')
+  //   routes.forEach(route => {
+  //     console.log('Elysia routes registered: ✅✅')
+  //     console.log(`🦊 ${route.method} ${route.path}`)
+  //   })
+  // })
+  .onAfterResponse(({ request, set }: any) => {
+    const status = set?.status ?? 200
+    const color = statusColor(status)
+    console.log(`[🦊 Elysia] ${BLUE}${request.method}${RESET} ${CYAN}${new URL(request.url).pathname}${RESET} ${color}${status}${RESET}`)
   })
   .onError(({ code, error, set }) => {
     // Get error message safely
@@ -40,7 +52,7 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
                         typeof error === 'string' ? error :
                         'Unknown error'
 
-    console.error('Elysia Error:', { code, error: errorMessage })
+    console.error(`[🦊 Elysia Error] ${RED}${code}${RESET}: ${errorMessage}`)
 
     if (code === 'NOT_FOUND') {
       set.status = 404
@@ -54,12 +66,6 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
   .use(userController)
   .use(aiModelsController)
   .use(chatController)
-  .onStart(({ routes }) => {
-    console.log('Elysia routes registered:')
-    routes.forEach(route => {
-      console.log(`${route.method} ${route.path}`)
-    })
-  })
 
 // Only enable OpenAPI in development
 if (process.env.NODE_ENV !== 'production') {
