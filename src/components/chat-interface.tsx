@@ -17,6 +17,7 @@ import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config"
 import { useUser } from "@/hooks/use-user"
 import { ThemeToggle } from "./theme-toggle";
 import { ModelSelectorClient } from "./model-selector-client";
+import { api } from "@/lib/eden-client";
 
 interface Message {
   id: string;
@@ -175,21 +176,14 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
       // Save to database in background if user is logged in
       if (user) {
         // Don't await - let it happen in background
-        fetch('/api/chat/history', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            messages: finalMessages,
-            model: currentSelectedModel,
-            chatId: currentChatId || undefined,
-          }),
+        api.chat.history.post({
+          messages: finalMessages,
+          model: currentSelectedModel,
+          chatId: currentChatId || undefined,
         })
-          .then(async (saveResponse) => {
-            if (saveResponse.ok) {
-              const saveData = await saveResponse.json()
+          .then((saveResponse: any) => {
+            if (saveResponse.data) {
+              const saveData = saveResponse.data
               if (saveData.chatId) {
                 // Update selected chat ID if it's a new chat
                 if (!currentChatId) {
@@ -203,7 +197,7 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
               }
             }
           })
-          .catch((error) => {
+          .catch((error: any) => {
             console.error('Failed to save chat history:', error)
           })
       }

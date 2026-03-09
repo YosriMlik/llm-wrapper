@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { api } from "@/lib/eden-client";
 
 interface Chat {
   id: string;
@@ -42,13 +43,10 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
     setError(null);
     
     try {
-      const response = await fetch('/api/chat/history', {
-        credentials: 'include',
-        cache: 'no-store', // Ensure fresh data
-      });
+      const response = await api.chat.history.get()
       
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
+        const data = response.data;
         if (data.success && data.chats) {
           const formattedChats: Chat[] = data.chats.map((chat: any) => ({
             id: chat.id,
