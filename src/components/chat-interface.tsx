@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-
+import { Sidebar } from "./sidebar";
+import { WelcomeScreen } from "./welcome-screen";
+import { ChatInput } from "./chat-input";
+import { FetchLoader } from "./fetch-loader";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Copy, Check } from "lucide-react";
-import { useUser } from "@/hooks/use-user";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config"
+import { useUser } from "@/hooks/use-user"
+import { ThemeToggle } from "./theme-toggle";
+import { ModelSelectorClient } from "./model-selector-client";
 
 interface Message {
   id: string;
@@ -17,24 +25,206 @@ interface Message {
 }
 
 interface ChatInterfaceProps {
-  messages: Message[];
-  isLoading?: boolean;
+  selectedModel?: string;
+  onModelChange?: (modelId: string) => void;
 }
 
-// Hardcoded example message to avoid errors
-const exampleMessage: Message = {
-  id: "example-1",
-  role: "assistant",
-  content: "Hello! I'm your AI assistant. How can I help you today?"
-};
-
-export function ChatInterface({
-  messages,
-  isLoading = false,
-}: ChatInterfaceProps) {
+export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange }: ChatInterfaceProps) {
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingChat, setIsFetchingChat] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const [currentSelectedModel, setCurrentSelectedModel] = useState(selectedModel);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
-  const { user } = useUser();
+  const { user } = useUser()
+
+  // Update selected model when prop changes
+  useEffect(() => {
+    setCurrentSelectedModel(selectedModel);
+  }, [selectedModel]);
+
+  // Handle initial sidebar state after mount
+  useEffect(() => {
+    setIsMounted(true);
+    // Open sidebar on desktop after hydration
+    if (window.innerWidth >= 1024) {
+      setIsSidebarOpen(true);
+    }
+  }, []);
+
+  const refreshChatList = () => {
+    // Call the global refresh function exposed by ChatList
+    if (typeof window !== 'undefined' && (window as any).__refreshChatList) {
+      (window as any).__refreshChatList();
+    }
+  };
+
+  const handleNewChat = () => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+    setSelectedChatId(null);
+    setMessages([]);
+    setInput("");
+  };
+
+  const handleSelectChat = async (chatId: string) => {
+    setSelectedChatId(chatId);
+    setIsFetchingChat(true);
+    
+    // Close sidebar on mobile after selecting a chat
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+    
+    // Fetch full chat from API
+    try {
+      const response = await fetch(`/api/chat/history/${chatId}`, {
+        credentials: 'include',
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.chat) {
+          const loadedMessages = data.chat.messages || []
+          setMessages(loadedMessages)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load chat:', error)
+    } finally {
+      setIsFetchingChat(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSelectedChatId(null);
+    setMessages([]);
+    setInput(suggestion);
+    // Trigger submit after a short delay
+    setTimeout(() => {
+      const form = document.querySelector("form");
+      if (form) {
+        form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+      }
+    }, 100);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    // Start with current chat or create new one
+    let currentChatId = selectedChatId;
+    let isNewChat = false;
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+    };
+
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      // Convert messages to OpenRouter format
+      const openRouterMessages = updatedMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: openRouterMessages,
+          model: currentSelectedModel,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to get response");
+      }
+
+      const data = await response.json();
+
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: data.response,
+      };
+
+      const finalMessages = [...updatedMessages, aiMessage];
+      setMessages(finalMessages);
+      setIsLoading(false);
+
+      // Save to database in background if user is logged in
+      if (user) {
+        // Don't await - let it happen in background
+        fetch('/api/chat/history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            messages: finalMessages,
+            model: currentSelectedModel,
+            chatId: currentChatId || undefined,
+          }),
+        })
+          .then(async (saveResponse) => {
+            if (saveResponse.ok) {
+              const saveData = await saveResponse.json()
+              if (saveData.chatId) {
+                // Update selected chat ID if it's a new chat
+                if (!currentChatId) {
+                  setSelectedChatId(saveData.chatId)
+                  isNewChat = true;
+                }
+                // Only refresh chat list if this was a new chat
+                if (isNewChat) {
+                  refreshChatList()
+                }
+              }
+            }
+          })
+          .catch((error) => {
+            console.error('Failed to save chat history:', error)
+          })
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Sorry, I couldn't get a response. ${error instanceof Error ? error.message : "Please try again."}`,
+      };
+      setMessages([...updatedMessages, errorMessage]);
+      setIsLoading(false);
+    }
+  };
+
+  const handleModelChange = (modelId: string) => {
+    setCurrentSelectedModel(modelId);
+    if (onModelChange) {
+      onModelChange(modelId);
+    }
+  };
 
   const handleCopy = async (content: string, messageId: string) => {
     try {
@@ -47,145 +237,168 @@ export function ChatInterface({
     }
   };
 
-  // Add a temporary "thinking" message if loading
-  const displayMessages = isLoading 
-    ? [...messages, { id: 'loading', role: 'assistant' as const, content: '' }]
-    : messages;
-
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto py-6 px-2 sm:px-6">
-        <div className="mx-auto max-w-8xl space-y-6">
-          {displayMessages.map((message, index) => {
-            const isUser = message.role === "user";
-            const isThinking = message.id === 'loading';
-            // Use index as fallback if id is missing
-            const key = message.id || `message-${index}`;
-            
-            return (
-              <div key={key} className="flex items-start gap-2 sm:gap-3">
-                {/* Left avatar (AI) */}
-                <div className="sm:w-10 flex justify-start">
-                  {!isUser && window.innerWidth >= 700 && (
-                    <Avatar>
-                      <AvatarFallback>🤖</AvatarFallback>
-                    </Avatar>
-                  )}
-                  </div>
-
-                {/* Message in the middle */}
-                <div className={`flex-1 flex ${isUser ? "justify-end" : "justify-start"}`}>
-                  <div className="w-full max-w-8xl">
-                    {isUser ? (
-                      <div className="bg-blue-200 dark:bg-blue-900 rounded-lg p-4 text-start">
-                        <p>{message.content}</p>
-                      </div>
-                    ) : isThinking ? (
-                      <div className="bg-muted rounded-lg border p-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground text-sm">Thinking</span>
-                          <div className="flex gap-1">
-                            <div className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"></div>
-                            <div
-                              className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
-                              style={{ animationDelay: "0.1s" }}></div>
-                            <div
-                              className="bg-muted-foreground h-2 w-2 animate-bounce rounded-full"
-                              style={{ animationDelay: "0.2s" }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-muted rounded-lg border p-4">
-                        <div className="prose prose-sm dark:prose-invert mb-4 max-w-none text-foreground text-left">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            rehypePlugins={[rehypeRaw]}
-                            components={{
-                              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                              h1: ({ children }) => <h1 className="text-2xl font-bold mb-2 mt-4 first:mt-0">{children}</h1>,
-                              h2: ({ children }) => <h2 className="text-xl font-bold mb-2 mt-4 first:mt-0">{children}</h2>,
-                              h3: ({ children }) => <h3 className="text-lg font-bold mb-2 mt-4 first:mt-0">{children}</h3>,
-                              code: ({ className, children, ...props }) => {
-                                const isInline = !className;
-                                return isInline ? (
-                                  <code className="bg-muted px-1 py-0.5 rounded text-sm" {...props}>{children}</code>
-                                ) : (
-                                  <code className="block bg-muted p-3 rounded-lg overflow-x-auto text-sm" {...props}>{children}</code>
-                                );
-                              },
-                              pre: ({ children }) => <pre className="mb-2">{children}</pre>,
-                              ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-                              ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-                              li: ({ children }) => <li className="ml-4">{children}</li>,
-                              blockquote: ({ children }) => <blockquote className="border-l-4 border-muted-foreground pl-4 italic mb-2">{children}</blockquote>,
-                              a: ({ href, children }) => <a href={href} className="text-primary underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-                              table: ({ children }) => (
-                                <div className="overflow-x-auto mb-4">
-                                  <table className="min-w-full border-collapse border border-border">
-                                    {children}
-                                  </table>
-                                </div>
-                              ),
-                              thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
-                              tbody: ({ children }) => <tbody>{children}</tbody>,
-                              tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
-                              th: ({ children }) => (
-                                <th className="border border-border px-4 py-2 text-left font-semibold bg-zinc-200 dark:bg-zinc-900">
-                                  {children}
-                                </th>
-                              ),
-                              td: ({ children }) => (
-                                <td className="border border-border px-4 py-2">
-                                  {children}
-                                </td>
-                              ),
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        </div>
-                        <div className="flex items-center justify-end gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0"
-                            onClick={() => handleCopy(message.content, message.id)}
-                          >
-                            {copiedMessageId === message.id ? (
-                              <Check className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right avatar (User) */}
-                <div className="sm:w-10 flex justify-end">
-                  {isUser && (
-                    <Avatar>
-                      {user?.image && !imageError ? (
-                        <AvatarImage 
-                          src={user.image} 
-                          alt={user.name || 'User'}
-                          onError={() => setImageError(true)}
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-blue-200 dark:bg-blue-900">
-                        {user?.name?.[0]?.toUpperCase() || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+    <div className="flex h-screen">
+      <FetchLoader isLoading={isFetchingChat} />
+      {/* Overlay for mobile - only show when sidebar is open on mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      {/* Sidebar */}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out lg:relative lg:z-auto",
+          // On mobile: slide out completely when closed
+          // On desktop: always visible, just collapsed
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}>
+        <Sidebar
+          selectedChatId={selectedChatId}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectChat}
+          onClose={() => setIsSidebarOpen(false)}
+          isCollapsed={!isSidebarOpen}
+        />
+      </div>
+      <div className="flex flex-1 flex-col transition-all duration-300 overflow-hidden">
+        {/* Header with menu toggle, model selector and theme toggle */}
+        <div className="flex items-center justify-between border-b px-4 py-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label="Toggle sidebar">
+            {isSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+          <div className="flex items-center gap-3">
+            <ModelSelectorClient 
+              selectedModel={currentSelectedModel}
+              onModelChange={handleModelChange} 
+            />
+            <ThemeToggle />
+          </div>
         </div>
+        
+        {/* Content Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {messages.length === 0 && !isLoading ? (
+            <WelcomeScreen onSuggestionClick={handleSuggestionClick} />
+          ) : (
+            <div className="flex-1 overflow-y-auto p-4 min-h-0">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "flex gap-4 p-4 rounded-lg min-w-0 max-w-full",
+                    message.role === "user" ? "bg-cyan-100 dark:bg-cyan-900" : "bg-background"
+                  )}
+                >
+                  <div className="flex-shrink-0">
+                    <Avatar className="h-8 w-8">
+                      {message.role === "user" ? (
+                        <>
+                          <AvatarImage src={user?.image || ""} alt={user?.name || "User"} />
+                          <AvatarFallback className="bg-zinc-300 dark:bg-zinc-500">{user?.name?.[0] || "U"}</AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarFallback>🤖</AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                  </div>
+                  <div className="flex-1 space-y-2 min-w-0 overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">
+                        {message.role === "user" ? user?.name || "You" : "AI Assistant"}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(message.content, message.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        {copiedMessageId === message.id ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="prose prose-sm max-w-none dark:prose-invert break-words">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          code: ({ className, children, ...props }: any) => {
+                            const match = /language-(\w+)/.exec(className || '');
+                            const isInline = !match;
+                            return !isInline ? (
+                              <pre className="bg-muted p-3 rounded-md overflow-x-auto max-w-full">
+                                <code className={className} {...props}>
+                                  {children}
+                                </code>
+                              </pre>
+                            ) : (
+                              <code className="bg-muted px-1 py-0.5 rounded text-sm break-all" {...props}>
+                                {children}
+                              </code>
+                            );
+                          },
+                          pre: ({ children, ...props }: any) => (
+                            <pre className="bg-muted p-3 rounded-md overflow-x-auto max-w-full" {...props}>
+                              {children}
+                            </pre>
+                          ),
+                          table: ({ children, ...props }: any) => (
+                            <div className="overflow-x-auto my-4">
+                              <table className="w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden" {...props}>
+                                {children}
+                              </table>
+                            </div>
+                          ),
+                          th: ({ children, ...props }: any) => (
+                            <th className="border border-gray-200 dark:border-gray-700 px-4 py-2 bg-gray-50 dark:bg-gray-800 font-semibold text-left" {...props}>
+                              {children}
+                            </th>
+                          ),
+                          td: ({ children, ...props }: any) => (
+                            <td className="border border-gray-200 dark:border-gray-700 px-4 py-2" {...props}>
+                              {children}
+                            </td>
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex gap-4 p-4">
+                  <div className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-medium">
+                    AI
+                  </div>
+                  <div className="flex-1">
+                    <div className="animate-pulse">Thinking...</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* Input Area - Always visible at bottom */}
+        <ChatInput
+          input={input}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </div>
     </div>
   );

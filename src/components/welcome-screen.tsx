@@ -41,9 +41,9 @@ export function WelcomeScreen({ onSuggestionClick }: WelcomeScreenProps) {
       </div>
 
       <div className="grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
-        {suggestions.map((suggestion, index) => (
+        {suggestions.map((suggestion) => (
           <Button
-            key={index}
+            key={suggestion.title}
             variant="outline"
             onClick={() => onSuggestionClick(suggestion.title)}
             className="group h-auto border-gray-200 p-6 text-left hover:bg-gray-50">

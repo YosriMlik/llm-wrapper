@@ -1,5 +1,8 @@
-import AiChat from "@/components/ai-chat";
+import { ChatInterface } from "@/components/chat-interface";
+import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config";
 
 export default function Home() {
-  return <AiChat />;
+  return (
+    <ChatInterface selectedModel={DEFAULT_AI_MODEL} />
+  );
 }

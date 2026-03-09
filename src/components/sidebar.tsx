@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/hooks/use-user"
-import { ChatList } from "./chat-list";
+import { ChatList } from "./recent-chats-list";
 
 import {
   Plus,
