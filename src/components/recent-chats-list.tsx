@@ -9,7 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { api } from "@/lib/eden-client";
+import { api } from "@/lib/eden-treaty";
 
 interface Chat {
   id: string;

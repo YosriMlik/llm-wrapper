@@ -17,7 +17,7 @@ import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config"
 import { useUser } from "@/hooks/use-user"
 import { ThemeToggle } from "./theme-toggle";
 import { ModelSelectorClient } from "./model-selector-client";
-import { api } from "@/lib/eden-client";
+import { api } from "@/lib/eden-treaty";
 
 interface Message {
   id: string;

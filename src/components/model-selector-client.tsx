@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModelDropdown } from "./model-dropdown";
-import { api } from "@/lib/eden-client";
+import { api } from "@/lib/eden-treaty";
 import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config";
 
 interface Model {
