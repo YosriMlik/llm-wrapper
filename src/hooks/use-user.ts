@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
+import { api } from '@/lib/eden-treaty'
 
 export interface UserData {
   id: string
   name: string
   email: string
-  image: string | null
-  role: string | null
+  image?: string | null | undefined
+  role?: string | null
+  emailVerified?: boolean
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 const SESSION_STORAGE_KEY = 'user-data';
@@ -47,25 +51,10 @@ export function useUser() {
   const fetchUserFromAPI = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/users/me', {
-          credentials: 'include',
-          cache: 'no-store', // Don't cache
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+      const response = await api.users.me.get()
 
-        if (!response.ok) {
-          if (response.status === 401) {
-            // User not authenticated - this is expected
-            setUser(null)
-          } else {
-            throw new Error(`HTTP error! status: ${response.status}`)
-          }
-          return
-        }
-
-        const data = await response.json()
+      if (response.data) {
+        const data = response.data
         if (data.success && data.user) {
           // Store in session storage
           const sessionData = {
@@ -79,13 +68,16 @@ export function useUser() {
         } else {
           setUser(null)
         }
-      } catch (err) {
-        console.error('Error fetching user:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch user')
+      } else {
+        // Handle error case
         setUser(null)
-      } finally {
-        setLoading(false)
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user')
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const refetch = () => {

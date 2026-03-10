@@ -56,8 +56,8 @@ export const chatController = new Elysia({ name: 'chat-controller' })
       // Get all chat history - GET /api/chat/history (protected)
       .get('/history', async ({ services, user, set }: any) => {
         const userId = getUserId(user)
-        console.log('[Controller] GET /history - userId:', userId)
-        console.log('[Controller] GET /history - user object:', user)
+        // console.log('[Controller] GET /history - userId:', userId)
+        // console.log('[Controller] GET /history - user object:', user)
         
         if (!userId) {
           set.status = 401
