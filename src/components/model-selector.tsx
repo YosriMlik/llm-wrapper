@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModelDropdown } from "./model-dropdown";
-import { AiModelsService } from "@/elysia/services/ai-models.service";
+import { AiModelsService } from "@/elysia/services/ai-models-service";
 import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config";
 
 interface Model {

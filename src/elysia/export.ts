@@ -1,5 +1,5 @@
 // Export services for use in server components
-export { AiModelsService } from './services/ai-models.service'
+export { AiModelsService } from './services/ai-models-service'
 export { ChatService } from './services/chat.service'
 
 // Export auth configuration

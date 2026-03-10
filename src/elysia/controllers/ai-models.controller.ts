@@ -24,7 +24,7 @@ const getAiModels = (context: any) => {
 // Routes - Using optional auth macro
 export const aiModelsController = new Elysia()
   // .use(optionalAuth) // Disabled for deployment
-  .get('/ai-models', getAiModels, {
+  .get('/ai_models', getAiModels, {
     // optionalAuth: true, // Disabled for deployment
     response: GetAiModelsResponseDto,
   })

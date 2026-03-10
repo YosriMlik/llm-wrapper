@@ -18,5 +18,8 @@
         ".env": true,
         ".gitignore": false,
     },
+    "files.associations": {
+        "*.service.ts": "typescriptreact"
+    },
     "hide-files.files": []
 }

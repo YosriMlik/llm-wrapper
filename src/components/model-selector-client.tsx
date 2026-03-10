@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModelDropdown } from "./model-dropdown";
-import { AiModelsService } from "@/elysia/services/ai-models.service";
+import { api } from "@/lib/eden-client";
 import { DEFAULT_AI_MODEL } from "@/elysia/config/ai-models.config";
 
 interface Model {
@@ -25,20 +25,20 @@ export function ModelSelectorClient({ className, onModelChange, selectedModel = 
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const service = new AiModelsService();
-        const config = service.getAiModels();
-        setModels(config.models);
+        const response = await api.ai_models.get();
+        if (response.data) {
+          setModels(response.data.models);
+        }
       } catch (error) {
         console.error('Failed to fetch models:', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchModels();
   }, []);
 
-  const selectedModelName = models.find(m => m.id === DEFAULT_AI_MODEL)?.name || 'Select Model';
+  //  const selectedModelName = models.find(m => m.id === DEFAULT_AI_MODEL)?.name || 'Select Model';
 
   if (loading) {
     return (
