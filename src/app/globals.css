@@ -194,3 +194,15 @@
 .prose em {
   @apply italic;
 }
+
+
+/* textarea {
+    height: 20px;
+    line-height: 20px; /* Matches height to center vertically
+    text-align: left;
+}
+
+textarea::placeholder {
+    text-align: left;
+} */
+
