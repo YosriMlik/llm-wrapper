@@ -11,12 +11,13 @@
         "**/.plugin_symlinks": true,
         "**/__pycache__": true,
         "node_modules": true,
+        "**/.*": true,
         ".next": true,
         "package-lock.json": true,
         ".vscode": true,
         ".qoder": true,
         ".env": true,
-        ".gitignore": false,
+        ".gitignore": true
     },
     "files.associations": {
         "*.service.ts": "typescriptreact"

@@ -1,5 +1,5 @@
 // elysia/services/chat.service.ts
-import { createOpenRouterService } from './openrouter.service'
+import { createOpenRouterService } from './openrouter-service'
 import { DEFAULT_AI_MODEL } from '../config/ai-models.config'
 import type { ChatMessage, ChatRequest, ChatResponse } from '../models/chat'
 import { db } from '@/lib/db'

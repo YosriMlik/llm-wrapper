@@ -2,13 +2,12 @@
 
 import type React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Paperclip, Mic, Send } from "lucide-react";
 import { ComingSoonDialog } from "./coming-soon-dialog";
 
 interface ChatInputProps {
   input: string;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   isLoading: boolean;
 }
@@ -29,12 +28,25 @@ export function ChatInput({
                 <Paperclip className="h-4 w-4" />
               </Button>
             </ComingSoonDialog>
-            <Input
+            <textarea
               value={input}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+                handleInputChange(e);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+                  e.preventDefault();
+                  if (input.trim() && !isLoading) {
+                    handleSubmit(e as any);
+                  }
+                }
+              }}
               placeholder="Ask me anything..."
-              className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="pt-2 flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 resize-none outline-none min-h-[36px] max-h-[200px] overflow-y-auto text-sm"
               disabled={isLoading}
+              rows={1}
             />
             <ComingSoonDialog functionality="Voice input">
               <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0">

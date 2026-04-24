@@ -5,8 +5,8 @@ import { chatController } from './controllers/chat.controller'
 import { userController } from './controllers/user.controller'
 import { AiModelsService } from './services/ai-models-service'
 //import { AuthService } from './services/auth.service'
-import { ChatService } from './services/chat.service'
-import { UserService } from './services/user.service'
+import { ChatService } from './services/chat-service'
+import { UserService } from './services/user-service'
 import { authController, OpenAPI } from './controllers/auth.controller'
 import { openapi } from '@elysiajs/openapi'
 import { node } from '@elysiajs/node'
@@ -43,7 +43,7 @@ export const app = new Elysia({ prefix: '/api', adapter: node() })
   .onAfterResponse(({ request, set }: any) => {
     const status = set?.status ?? 200
     const color = statusColor(status)
-    console.log(`[🦊 Elysia] ${BLUE}${request.method}${RESET} ${CYAN}${new URL(request.url).pathname}${RESET} ${color}${status}${RESET}`)
+    console.log(`\n[🦊 Elysia] ${BLUE}${request.method}${RESET} ${CYAN}${new URL(request.url).pathname}${RESET} ${color}${status}${RESET}\n`)
   })
   .onError(({ code, error, set }) => {
     // Get error message safely

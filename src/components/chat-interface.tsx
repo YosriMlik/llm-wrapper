@@ -115,7 +115,7 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
     }, 100);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   };
 
@@ -259,7 +259,7 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
       </div>
       <div className="flex flex-1 flex-col transition-all duration-300 overflow-hidden">
         {/* Header with menu toggle, model selector and theme toggle */}
-        <div className="flex items-center justify-between border-b px-4 py-2 flex-shrink-0">
+        <div className="flex items-center justify-between border-b px-4 py-2 shrink-0">
           <Button
             variant="ghost"
             size="icon"
@@ -290,7 +290,7 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
                     message.role === "user" ? "bg-cyan-100 dark:bg-cyan-900" : "bg-background"
                   )}
                 >
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <Avatar className="h-8 w-8">
                       {message.role === "user" ? (
                         <>
@@ -322,7 +322,7 @@ export function ChatInterface({ selectedModel = DEFAULT_AI_MODEL, onModelChange 
                         )}
                       </Button>
                     </div>
-                    <div className="prose prose-sm max-w-none dark:prose-invert break-words">
+                    <div className="prose prose-sm max-w-none dark:prose-invert wrap-break-word">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         rehypePlugins={[rehypeRaw]}

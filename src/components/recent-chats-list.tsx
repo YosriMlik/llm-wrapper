@@ -92,8 +92,9 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
   }
 
   if (chats.length === 0) {
+    if (isCollapsed) return null;
     return (
-      <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+      <div className="px-4 py-8 text-center text-sm text-muted-foreground whitespace-nowrap overflow-hidden">
         {userId ? 'No chats yet' : 'Sign in to see your chats'}
       </div>
     );

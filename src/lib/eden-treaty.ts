@@ -6,7 +6,8 @@ const getBaseUrl = () => {
     // Browser environment
     return window.location.origin
   }
-  // Server environment
+
+  // Server environment (mostly not gonna use it, because we can just call the elysia service directly in server components)
   return process.env.NEXT_PUBLIC_BETTER_AUTH_URL as string;
 }
 

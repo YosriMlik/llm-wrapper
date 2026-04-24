@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia'
-import { UserService } from '../services/user.service'
+import { UserService } from '../services/user-service'
 import { auth } from '../config/better-auth.config'
 
 const userService = new UserService()
@@ -168,7 +168,7 @@ export const userController = new Elysia({ prefix: '/users' })
       let user = session?.user
 
       if (!userId) {
-        console.log('[🦊 Elysia] Falling back to manual cookie parsing')
+        console.log('\n[🦊 Elysia] Falling back to manual cookie parsing\n')
         userId = getUserIdFromSessionDataCookie(headers.cookie ?? '')
         user = getUserFromSessionDataCookie(headers.cookie ?? '')
       }

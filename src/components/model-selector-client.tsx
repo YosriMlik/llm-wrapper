@@ -25,6 +25,7 @@ export function ModelSelectorClient({ className, onModelChange, selectedModel = 
   useEffect(() => {
     const fetchModels = async () => {
       try {
+        // This is not a network call because data is hardcoded in FREE_AI_MODELS in ai-models.config
         const response = await api.ai_models.get();
         if (response.data) {
           setModels(response.data.models);

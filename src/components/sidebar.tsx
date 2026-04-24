@@ -95,12 +95,12 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
         {/* Recent Chats */}
         <div className="flex min-h-0 flex-1 flex-col">
           {!isCollapsed && (
-            <div className="px-4 py-2">
+            <div className="px-4 py-2 whitespace-nowrap overflow-hidden">
               <div className="mb-2 flex items-center justify-between">
                 <h3 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
                   Recent Chats
                 </h3>
-                <Search className="h-4 w-4 text-muted-foreground" />
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
               <div className="relative">
                 <Input
