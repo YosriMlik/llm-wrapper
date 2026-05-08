@@ -93,7 +93,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
         </div>
 
         {/* Recent Chats */}
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col ">
           {!isCollapsed && (
             <div className="px-4 py-2 whitespace-nowrap overflow-hidden">
               <div className="mb-2 flex items-center justify-between">
@@ -148,7 +148,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
             )
           ) : user ? (
             isCollapsed ? (
-              <div className="flex w-full justify-center p-2">
+              <div className="flex w-full justify-start p-2">
                 {image && (
                   <img
                     src={image}
@@ -158,7 +158,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
                 )}
               </div>
             ) : (
-              <div className="flex w-full items-center gap-2 px-2 pb-3 pt-2 border-b">
+              <div className="flex w-full items-start gap-2 px-2 pb-2 pt-2 border-b">
                 {image && (
                   <img
                     src={image}
@@ -179,7 +179,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
                 <GoogleAuthDialog functionality="Settings">
                   <Button
                     variant="ghost"
-                    className="text-muted-foreground w-full justify-center p-2 gap-2">
+                    className="text-muted-foreground w-full justify-start p-2 gap-2">
                     <LogIn className="h-4 w-4" />
                   </Button>
                 </GoogleAuthDialog>
@@ -205,7 +205,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
                   <SettingsDialog>
                     <Button
                       variant="ghost"
-                      className="text-muted-foreground w-full justify-center p-2 gap-2">
+                      className="text-muted-foreground w-full justify-start ps-2 pe-0 gap-2">
                       <Settings className="h-4 w-4" />
                     </Button>
                   </SettingsDialog>
@@ -213,7 +213,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
                   <GoogleAuthDialog functionality="Settings">
                     <Button
                       variant="ghost"
-                      className="text-muted-foreground w-full justify-center p-2 gap-2">
+                      className="text-muted-foreground w-full justify-start p-2 gap-2">
                       <Settings className="h-4 w-4" />
                     </Button>
                   </GoogleAuthDialog>
@@ -250,7 +250,7 @@ export function Sidebar({ selectedChatId, onNewChat, onSelectChat, onClose, isCo
                 <ComingSoonDialog functionality="Help & Support">
                   <Button
                     variant="ghost"
-                    className="text-muted-foreground w-full justify-center p-2 gap-2">
+                    className="text-muted-foreground w-full justify-start p-2 gap-2">
                     <HelpCircle className="h-4 w-4" />
                   </Button>
                 </ComingSoonDialog>

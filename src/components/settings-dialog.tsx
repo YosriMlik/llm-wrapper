@@ -47,7 +47,7 @@ export function SettingsDialog({ children }: SettingsDialogProps) {
       <AlertDialogTrigger asChild>
         {children}
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="data-[state=open]:animate-none data-[state=closed]:animate-none">
         <AlertDialogHeader>
           <AlertDialogTitle>Settings</AlertDialogTitle>
           <AlertDialogDescription>

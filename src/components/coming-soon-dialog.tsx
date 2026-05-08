@@ -33,7 +33,7 @@ export function ComingSoonDialog({ children, functionality }: ComingSoonDialogPr
       <AlertDialogTrigger asChild>
         {children}
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="data-[state=open]:animate-none data-[state=closed]:animate-none">
         <AlertDialogHeader>
           <AlertDialogTitle>Coming Soon!</AlertDialogTitle>
           <AlertDialogDescription>

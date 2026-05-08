@@ -104,22 +104,23 @@ export function ChatList({ selectedChatId, onSelectChat, isCollapsed = false, us
     <>
       {chats.map((chat) => (
         isCollapsed ? (
-          <Tooltip key={chat.id}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                onClick={() => onSelectChat(chat.id)}
-                className={cn(
-                  "h-auto p-2 justify-center hover:bg-accent hover:text-accent-foreground",
-                  selectedChatId === chat.id && "bg-accent text-accent-foreground"
-                )}>
-                <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p>{chat.title}</p>
-            </TooltipContent>
-          </Tooltip>
+          // <Tooltip key={chat.id}>
+          //   <TooltipTrigger asChild>
+          //     <Button
+          //       variant="ghost"
+          //       onClick={() => onSelectChat(chat.id)}
+          //       className={cn(
+          //         "h-auto w-full p-2 justify-start hover:bg-accent hover:text-accent-foreground",
+          //         selectedChatId === chat.id && "bg-accent text-accent-foreground"
+          //       )}>
+          //       <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+          //     </Button>
+          //   </TooltipTrigger>
+          //   <TooltipContent side="right">
+          //     <p>{chat.title}</p>
+          //   </TooltipContent>
+          // </Tooltip>
+          <span></span>
         ) : (
           <Button
             key={chat.id}

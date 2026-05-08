@@ -43,7 +43,7 @@ export function GoogleAuthDialog({ children, functionality }: GoogleAuthDialogPr
       <AlertDialogTrigger asChild>
         {children}
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="data-[state=open]:animate-none data-[state=closed]:animate-none">
         <AlertDialogHeader>
           <AlertDialogTitle>{functionality}</AlertDialogTitle>
           <AlertDialogDescription>
